@@ -2,32 +2,21 @@
 
 :root{
   /* =========================
-     BACKGROUND (Glassy Red)
+     BACKGROUND (Black)
      ========================= */
-  --bgRed1: #2a060a;    /* deep wine */
-  --bgRed2: #0f0506;    /* near-black red */
-  --bgGlowA: rgba(255, 60, 90, 0.20);
-  --bgGlowB: rgba(255, 90, 120, 0.12);
-  --bgGlowC: rgba(255, 255, 255, 0.06);
+  --bg1:#050505;
+  --bg2:#0b0b0f;
 
   /* Glass card */
-  --glass: rgba(255,255,255,0.10);
-  --glass2: rgba(255,255,255,0.06);
-  --stroke: rgba(255,255,255,0.14);
-  --shadow: 0 24px 70px rgba(0,0,0,0.55);
+  --glass: rgba(255,255,255,0.08);
+  --glass2: rgba(255,255,255,0.04);
+  --stroke: rgba(255,255,255,0.12);
+  --shadow: 0 24px 70px rgba(0,0,0,0.60);
 
   --text: rgba(255,255,255,0.96);
   --muted: rgba(255,255,255,0.72);
 
-  /* =========================
-     CLIENT NAME COLOR
-     ========================= */
-  --nameGradA: #ff4d6d; /* red-pink */
-  --nameGradB: #ffcc66; /* warm gold */
-
-  /* =========================
-     URGENT TIMER COLOR
-     ========================= */
+  /* Urgent timer */
   --urgent: #ff3b5c;
 }
 
@@ -44,11 +33,10 @@ body{
   position:fixed;
   inset:0;
   background:
-    radial-gradient(900px 520px at 20% 25%, var(--bgGlowA), transparent 60%),
-    radial-gradient(800px 520px at 80% 65%, var(--bgGlowB), transparent 60%),
-    radial-gradient(700px 420px at 55% 35%, var(--bgGlowC), transparent 70%),
-    linear-gradient(135deg, var(--bgRed1), var(--bgRed2));
-  filter: saturate(1.15);
+    radial-gradient(1200px 600px at 20% 20%, rgba(255,255,255,0.10), transparent 60%),
+    radial-gradient(900px 500px at 80% 60%, rgba(255,255,255,0.08), transparent 60%),
+    linear-gradient(135deg, var(--bg1), var(--bg2));
+  filter: saturate(1.05);
 }
 
 /* ==========
@@ -65,7 +53,6 @@ body{
   left: 60px;
   top: 60px;
 
-  /* Customize: screensaver logo size */
   width: 220px;
   height: auto;
 
@@ -93,37 +80,8 @@ body{
   background: linear-gradient(180deg, var(--glass), var(--glass2));
   border: 1px solid var(--stroke);
   box-shadow: var(--shadow);
-  padding: 70px 52px 52px; /* extra top padding to account for topLogo */
+  padding: 52px 52px 52px;
   backdrop-filter: blur(16px);
-}
-
-/* =========================
-   Long Logo Sitting "On Top"
-   =========================
-   NOTE: If your PNG has uneven transparent padding, it can LOOK off-center.
-   Quick fix: adjust --logoNudgePX below.
-*/
-:root{
-  --logoNudgePX: 0px; /* Customize: try 4px or -4px if it looks off */
-}
-
-.topLogo{
-  position:absolute;
-  left: 50%;
-  top: -44px;
-  transform: translateX(calc(-50% + var(--logoNudgePX)));
-  display:block;
-
-  height: 74px;
-  width: auto;
-
-  padding: 12px 18px;
-  border-radius: 18px;
-  background: rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.14);
-  backdrop-filter: blur(10px);
-
-  filter: drop-shadow(0 18px 44px rgba(0,0,0,0.60));
 }
 
 /* =========================
@@ -133,30 +91,38 @@ body{
   text-transform: uppercase;
   font-weight: 950;
   line-height: 1.06;
-
-  /* Better default tracking for uppercase */
   letter-spacing: 0.035em;
-
-  /* Big, TV-friendly */
-  font-size: clamp(38px, 4.6vw, 84px);
+  font-size: clamp(38px, 4.2vw, 78px);
 }
 
 .welcomeText{
-  display:inline;
-  margin-right: 18px;
+  display:block;
 }
 
 /* =========================
-   Client Name (better kerning + glow pulse)
+   Client On Their Own Line
    ========================= */
-@keyframes nameGlowPulse {
+.clientLine{
+  margin-top: 14px;
+}
+
+/* =========================
+   Client Name (White Glow Pulse)
+   ========================= */
+@keyframes whiteGlowPulse {
   0%, 100% {
-    filter: drop-shadow(0 10px 24px rgba(0,0,0,0.40));
-    opacity: 0.96;
+    text-shadow:
+      0 0 10px rgba(255,255,255,0.22),
+      0 0 26px rgba(255,255,255,0.16),
+      0 14px 34px rgba(0,0,0,0.55);
+    opacity: 0.92;
     transform: translateY(0);
   }
   50% {
-    filter: drop-shadow(0 14px 36px rgba(255, 120, 160, 0.24));
+    text-shadow:
+      0 0 14px rgba(255,255,255,0.34),
+      0 0 44px rgba(255,255,255,0.24),
+      0 18px 46px rgba(0,0,0,0.60);
     opacity: 1;
     transform: translateY(-1px);
   }
@@ -164,26 +130,25 @@ body{
 
 .clientName{
   display:inline-block;
+  text-transform: uppercase;
+  font-weight: 950;
 
-  /* Name-specific kerning (uppercase looks better slightly tighter) */
-  letter-spacing: 0.02em;   /* Customize: 0.00–0.04em */
-  margin-left: 10px;
+  /* Tuned kerning for uppercase */
+  letter-spacing: 0.02em;
 
-  /* Fun gradient fill */
-  background: linear-gradient(90deg, var(--nameGradA), var(--nameGradB));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  /* Bigger than headline for emphasis */
+  font-size: clamp(44px, 5.0vw, 96px);
 
-  /* Constant subtle glow pulse */
-  animation: nameGlowPulse 2.6s ease-in-out infinite;
+  /* White glow */
+  color: rgba(255,255,255,0.98);
+  animation: whiteGlowPulse 2.4s ease-in-out infinite;
 }
 
 /* ==========
    Meta rows
    ========== */
 .meta{
-  margin-top: 28px;
+  margin-top: 26px;
   display:flex;
   flex-direction:column;
   gap: 12px;
