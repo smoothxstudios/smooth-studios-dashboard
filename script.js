@@ -1,12 +1,21 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
+const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+
+/* =========================
+   Customize Refresh Interval
+   =========================
+   If you want the countdown smoother, lower this to 3000 (3 sec).
+*/
+const REFRESH_MS = 10000;
 
 function pad(n){ return String(n).padStart(2,"0"); }
 
 function extractFirstName(eventTitle){
   if(!eventTitle) return "";
-  const firstChunk = eventTitle.split(/:|\s[-–—]\s/)[0].trim(); // before ":" or " - "
-  const firstWord = firstChunk.split(/\s+/)[0].trim();
-  return firstWord || firstChunk;
+
+  // Your titles: "Khari Jackson: Quick Studio Rental..."
+  const beforeColon = eventTitle.split(":")[0].trim(); // "Khari Jackson"
+  const firstWord = beforeColon.split(/\s+/)[0].trim(); // "Khari"
+  return firstWord || beforeColon;
 }
 
 function formatTimeRange(startISO, endISO){
@@ -35,52 +44,107 @@ function formatTimeLeft(endISO){
 
 function formatDateLine(){
   const now = new Date();
-  const opts = { weekday:"long", month:"long", day:"numeric", year:"numeric" };
-  return now.toLocaleDateString([], opts);
+  return now.toLocaleDateString([], { weekday:"long", month:"long", day:"numeric", year:"numeric" });
 }
 
-async function refresh(){
-  const lineEl = document.getElementById("line");
-  const timeRow = document.getElementById("timeRow");
-  const dateRow = document.getElementById("dateRow");
-  const pill = document.getElementById("statusPill");
+/* =========================
+   UI Elements
+   ========================= */
+const screensaverEl = document.getElementById("screensaver");
+const ssLogo = document.getElementById("ssLogo");
 
+const sessionUI = document.getElementById("sessionUI");
+const statusPill = document.getElementById("statusPill");
+const timeRow = document.getElementById("timeRow");
+const dateRow = document.getElementById("dateRow");
+const clientNameEl = document.getElementById("clientName");
+
+/* =========================
+   Screensaver Bounce Logic
+   =========================
+   Customize speed below:
+*/
+let vx = 2.6; // Customize: horizontal speed
+let vy = 2.2; // Customize: vertical speed
+let x = 60, y = 60;
+
+function tickScreensaver(){
+  if (screensaverEl.style.display === "none") {
+    requestAnimationFrame(tickScreensaver);
+    return;
+  }
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  const rect = ssLogo.getBoundingClientRect();
+  const lw = rect.width || 220;
+  const lh = rect.height || 220;
+
+  x += vx;
+  y += vy;
+
+  if (x <= 0) { x = 0; vx *= -1; }
+  if (y <= 0) { y = 0; vy *= -1; }
+  if (x + lw >= w) { x = w - lw; vx *= -1; }
+  if (y + lh >= h) { y = h - lh; vy *= -1; }
+
+  ssLogo.style.transform = `translate(${x}px, ${y}px)`;
+  requestAnimationFrame(tickScreensaver);
+}
+requestAnimationFrame(tickScreensaver);
+
+/* =========================
+   JSONP Feed Loader
+   ========================= */
+window.handleSmoothFeed = function(data){
   dateRow.textContent = formatDateLine();
 
-  try{
-    const res = await fetch(APPS_SCRIPT_URL, { cache:"no-store" });
-    const data = await res.json();
-
-    if(!data.title){
-      lineEl.textContent = "Welcome To Smooth Studios";
-      timeRow.textContent = "No More Bookings Scheduled Today";
-      pill.textContent = "Closed / No Sessions";
-      pill.className = "pill next";
-      return;
-    }
-
-    const firstName = extractFirstName(data.title);
-    const timeRange = formatTimeRange(data.startISO, data.endISO);
-
-    lineEl.textContent = `Welcome To Smooth Studios "${firstName}"`;
-
-    if(data.isLive){
-      pill.textContent = "In Session";
-      pill.className = "pill live";
-      timeRow.textContent = `${timeRange}  •  ${formatTimeLeft(data.endISO)}`;
-    }else{
-      pill.textContent = "Up Next";
-      pill.className = "pill next";
-      timeRow.textContent = `${timeRange}`;
-    }
-
-  }catch(e){
-    lineEl.textContent = "Welcome To Smooth Studios";
-    timeRow.textContent = "Connecting…";
-    pill.textContent = "Connecting";
-    pill.className = "pill next";
+  // If not live, go to screensaver mode
+  if(!data || !data.title || !data.isLive){
+    sessionUI.classList.add("hidden");
+    screensaverEl.style.display = "block";
+    return;
   }
+
+  // Live session mode
+  screensaverEl.style.display = "none";
+  sessionUI.classList.remove("hidden");
+
+  statusPill.textContent = "In Session";
+  statusPill.className = "pill live";
+
+  const firstName = extractFirstName(data.title);
+  clientNameEl.textContent = firstName;
+
+  const timeRange = formatTimeRange(data.startISO, data.endISO);
+  const timeLeft = formatTimeLeft(data.endISO);
+
+  // Customize: change separator / wording here
+  timeRow.textContent = `${timeRange}  •  ${timeLeft}`;
+};
+
+function loadFeed(){
+  // Remove previous JSONP script if it exists
+  const old = document.getElementById("jsonp");
+  if (old) old.remove();
+
+  const s = document.createElement("script");
+  s.id = "jsonp";
+
+  // JSONP callback + cache buster
+  s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
+
+  s.onerror = () => {
+    // If feed fails, default to screensaver
+    sessionUI.classList.add("hidden");
+    screensaverEl.style.display = "block";
+  };
+
+  document.body.appendChild(s);
 }
 
-refresh();
-setInterval(refresh, 10000);
+// Start
+dateRow.textContent = formatDateLine();
+loadFeed();
+setInterval(loadFeed, REFRESH_MS);
