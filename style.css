@@ -1,3 +1,5 @@
+/* style.css (FULL) */
+
 :root{
   --bg1:#050505;
   --bg2:#0b0b0f;
@@ -10,65 +12,118 @@
   --text: rgba(255,255,255,0.96);
   --muted: rgba(255,255,255,0.72);
 
-  --urgent: #ff1b3a;
+  /* More “RED” urgent */
+  --urgent: #ff1b1b;
 }
 
+/* -----------------------
+   Base
+------------------------ */
 *{ box-sizing:border-box; }
 html,body{ height:100%; margin:0; }
-
 body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
   overflow:hidden;
 }
 
-/* Background */
-.bg{
-  position:fixed;
-  inset:0;
-  background:
-    radial-gradient(1200px 600px at 20% 20%, rgba(255,255,255,0.07), transparent 60%),
-    radial-gradient(900px 500px at 80% 60%, rgba(255,255,255,0.05), transparent 60%),
-    linear-gradient(135deg, var(--bg1), var(--bg2));
+/* -----------------------
+   Ambient background motion
+------------------------ */
+@keyframes bgDrift {
+  0%   { transform: scale(1.05) translate3d(-1.5%, -1.0%, 0); filter: saturate(1.03); }
+  50%  { transform: scale(1.08) translate3d( 1.2%,  1.1%, 0); filter: saturate(1.07); }
+  100% { transform: scale(1.05) translate3d(-1.5%, -1.0%, 0); filter: saturate(1.03); }
 }
 
-/* Screensaver */
-.screensaver{
+.bg{
+  position:fixed;
+  inset:-6%;
+  background:
+    radial-gradient(1200px 650px at 18% 22%, rgba(255,255,255,0.06), transparent 62%),
+    radial-gradient(900px 560px at 82% 62%, rgba(255,255,255,0.05), transparent 62%),
+    linear-gradient(135deg, var(--bg1), var(--bg2));
+  animation: bgDrift 36s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.noise{
   position:fixed;
   inset:0;
+  pointer-events:none;
+  opacity:0.06; /* Customize: 0.03–0.10 */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
+
+/* -----------------------
+   Fade transitions between states
+------------------------ */
+.isHidden{
+  opacity:0;
+  visibility:hidden;
+  transform: translateY(10px);
+  pointer-events:none;
+}
+
+.isVisible{
+  opacity:1;
+  visibility:visible;
+  transform: translateY(0);
+  pointer-events:auto;
+}
+
+.screensaver,
+.wrap{
+  position:fixed;
+  inset:0;
+  transition: opacity 420ms ease, transform 420ms ease, visibility 420ms ease;
+}
+
+/* -----------------------
+   Screensaver
+------------------------ */
+.screensaver{ display:block; }
 
 .ssLogo{
   position:absolute;
-  left: 0;
-  top: 0;
+  left:0;
+  top:0;
 
   width:220px;
+  height:auto;
+
   filter: drop-shadow(0 18px 44px rgba(0,0,0,0.65));
-  will-change: transform; /* performance hint */
+  will-change: transform;
 }
 
-/* Layout */
+/* -----------------------
+   Session UI Layout
+------------------------ */
 .wrap{
-  height:100%;
   display:grid;
   place-items:center;
   padding:6vh 6vw;
 }
 
-.hidden{ display:none !important; }
+.stack{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  width:min(92vw, 1500px);
+}
 
 .card{
-  width:min(92vw,1500px);
+  width:100%;
   padding:56px;
   border-radius:30px;
   background:linear-gradient(180deg,var(--glass),var(--glass2));
   border:1px solid var(--stroke);
   box-shadow:var(--shadow);
   backdrop-filter:blur(16px);
-
-  /* 🔥 CENTER EVERYTHING */
-  text-align:center;
+  text-align:center; /* center all text */
 }
 
 /* Headline */
@@ -79,37 +134,33 @@ body{
   font-size:clamp(38px,4.2vw,78px);
 }
 
-/* Client line */
-.clientLine{
-  margin-top:20px;
-}
+/* Client */
+.clientLine{ margin-top:20px; }
 
-/* Client glow */
-@keyframes whiteGlowPulse {
-  0%, 100% {
+@keyframes whiteGlowPulse{
+  0%,100%{
     text-shadow:
-      0 0 16px rgba(255,255,255,0.35),
-      0 0 42px rgba(255,255,255,0.25),
-      0 0 70px rgba(255,255,255,0.18),
-      0 0 140px rgba(255,255,255,0.20); /* BIG SOFT HALO */
+      0 0 18px rgba(255,255,255,0.35),
+      0 0 44px rgba(255,255,255,0.25),
+      0 0 90px rgba(255,255,255,0.18);
+    opacity:.95;
   }
-  50% {
+  50%{
     text-shadow:
-      0 0 26px rgba(255,255,255,0.55),
-      0 0 68px rgba(255,255,255,0.40),
-      0 0 110px rgba(255,255,255,0.30),
+      0 0 28px rgba(255,255,255,0.55),
+      0 0 72px rgba(255,255,255,0.40),
       0 0 140px rgba(255,255,255,0.32); /* BIG SOFT HALO */
+    opacity:1;
   }
 }
-
 
 .clientName{
   font-size:clamp(52px,5.5vw,110px);
   font-weight:950;
   letter-spacing:0.02em;
   text-transform:uppercase;
-  color:white;
-  animation:whiteGlowPulse 2.4s ease-in-out infinite;
+  color:#fff;
+  animation:whiteGlowPulse 2.6s ease-in-out infinite;
 }
 
 /* Meta */
@@ -123,6 +174,7 @@ body{
 .metaRow{
   font-size:clamp(18px,2vw,34px);
   font-weight:750;
+  letter-spacing:0.02em;
 }
 
 .muted{ color:var(--muted); }
@@ -130,17 +182,18 @@ body{
 .unit{
   font-size:.75em;
   margin-left:4px;
+  opacity:.9;
 }
 
-/* Urgent pulse */
+/* Urgent pulse (more red) */
 @keyframes urgentPulse{
   0%,100%{
     transform:scale(1);
-    filter:drop-shadow(0 0 18px rgba(255,27,58,0.22));
+    filter:drop-shadow(0 0 22px rgba(255,27,27,0.22));
   }
   50%{
     transform:scale(1.02);
-    filter:drop-shadow(0 0 42px rgba(255,27,58,0.45));
+    filter:drop-shadow(0 0 54px rgba(255,27,27,0.55));
   }
 }
 
@@ -149,4 +202,32 @@ body{
   animation:urgentPulse .85s ease-in-out infinite;
 }
 
+/* -----------------------
+   Next Up bubble
+------------------------ */
+.nextUp{
+  width: min(780px, 92vw);
+  padding: 16px 20px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+  backdrop-filter: blur(16px);
+  text-align:center;
+  transition: opacity 420ms ease, transform 420ms ease, visibility 420ms ease;
+}
 
+.nextUpLabel{
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.78;
+  font-weight: 800;
+}
+
+.nextUpValue{
+  margin-top: 6px;
+  font-size: clamp(18px, 1.6vw, 26px);
+  font-weight: 850;
+  letter-spacing: 0.03em;
+}
