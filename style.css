@@ -21,7 +21,7 @@
   */
   --clientGradA: #7c3aed; /* Customize: gradient start */
   --clientGradB: #22c55e; /* Customize: gradient end */
-  --clientSolid: #22c55e; /* Customize: solid option */
+  --clientSolid: #e01e26; /* Customize: solid option */
 }
 
 *{ box-sizing:border-box; }
