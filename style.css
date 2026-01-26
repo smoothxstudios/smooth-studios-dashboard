@@ -16,8 +16,10 @@
   --text: rgba(255,255,255,0.96);
   --muted: rgba(255,255,255,0.72);
 
-  /* Urgent timer */
-  --urgent: #ff3b5c;
+  /* =========================
+     URGENT TIMER (More RED)
+     ========================= */
+  --urgent: #ff1b3a; /* brighter red (less crimson) */
 }
 
 *{ box-sizing:border-box; }
@@ -33,10 +35,10 @@ body{
   position:fixed;
   inset:0;
   background:
-    radial-gradient(1200px 600px at 20% 20%, rgba(255,255,255,0.10), transparent 60%),
-    radial-gradient(900px 500px at 80% 60%, rgba(255,255,255,0.08), transparent 60%),
+    radial-gradient(1200px 600px at 20% 20%, rgba(255,255,255,0.07), transparent 60%),
+    radial-gradient(900px 500px at 80% 60%, rgba(255,255,255,0.05), transparent 60%),
     linear-gradient(135deg, var(--bg1), var(--bg2));
-  filter: saturate(1.05);
+  filter: saturate(1.02);
 }
 
 /* ==========
@@ -100,29 +102,36 @@ body{
 }
 
 /* =========================
-   Client On Their Own Line
+   Client Centered Line
    ========================= */
 .clientLine{
-  margin-top: 14px;
+  margin-top: 18px;
+  display:flex;
+  justify-content:center; /* centers horizontally */
+  align-items:center;
+  text-align:center;
+  width:100%;
 }
 
 /* =========================
-   Client Name (White Glow Pulse)
+   Client Name (SOLID WHITE + WHITE GLOW)
+   - No gradient
+   - Centered
    ========================= */
 @keyframes whiteGlowPulse {
   0%, 100% {
     text-shadow:
-      0 0 10px rgba(255,255,255,0.22),
-      0 0 26px rgba(255,255,255,0.16),
-      0 14px 34px rgba(0,0,0,0.55);
-    opacity: 0.92;
+      0 0 10px rgba(255,255,255,0.25),
+      0 0 28px rgba(255,255,255,0.18),
+      0 18px 44px rgba(0,0,0,0.55);
+    opacity: 0.94;
     transform: translateY(0);
   }
   50% {
     text-shadow:
-      0 0 14px rgba(255,255,255,0.34),
-      0 0 44px rgba(255,255,255,0.24),
-      0 18px 46px rgba(0,0,0,0.60);
+      0 0 14px rgba(255,255,255,0.36),
+      0 0 46px rgba(255,255,255,0.26),
+      0 22px 54px rgba(0,0,0,0.62);
     opacity: 1;
     transform: translateY(-1px);
   }
@@ -133,14 +142,15 @@ body{
   text-transform: uppercase;
   font-weight: 950;
 
-  /* Tuned kerning for uppercase */
+  /* Uppercase kerning tuned */
   letter-spacing: 0.02em;
 
-  /* Bigger than headline for emphasis */
-  font-size: clamp(44px, 5.0vw, 96px);
+  font-size: clamp(50px, 5.2vw, 104px);
 
-  /* White glow */
+  /* Solid white */
   color: rgba(255,255,255,0.98);
+
+  /* Glow pulse */
   animation: whiteGlowPulse 2.4s ease-in-out infinite;
 }
 
@@ -161,6 +171,11 @@ body{
   color: var(--text);
 }
 
+/* Keep Appointment Time left-aligned (as in your screenshot) */
+#timeRow, #dateRow{
+  text-align: left;
+}
+
 .muted{
   color: var(--muted);
   font-weight: 650;
@@ -174,24 +189,25 @@ body{
 }
 
 /* =========================
-   URGENT timer pulsing red (<=10:00)
+   URGENT timer pulsing RED (<=10:00)
    ========================= */
 @keyframes urgentPulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 10px 26px rgba(255, 59, 92, 0.10));
+    filter: drop-shadow(0 10px 26px rgba(255, 27, 58, 0.14));
     opacity: 0.92;
   }
   50% {
-    transform: scale(1.015);
-    filter: drop-shadow(0 16px 40px rgba(255, 59, 92, 0.22));
+    transform: scale(1.02);
+    filter: drop-shadow(0 18px 52px rgba(255, 27, 58, 0.30));
     opacity: 1;
   }
 }
 
 .urgent{
   color: var(--urgent);
-  text-shadow: 0 10px 32px rgba(255, 59, 92, 0.20);
-  animation: urgentPulse 900ms ease-in-out infinite;
+  text-shadow: 0 10px 32px rgba(255, 27, 58, 0.24);
+  animation: urgentPulse 850ms ease-in-out infinite;
   transform-origin: left center;
 }
+
