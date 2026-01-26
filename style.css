@@ -85,20 +85,23 @@ body{
 }
 
 /* Client glow */
-@keyframes whiteGlowPulse{
-  0%,100%{
+@keyframes whiteGlowPulse {
+  0%, 100% {
     text-shadow:
-      0 0 12px rgba(255,255,255,0.25),
-      0 0 32px rgba(255,255,255,0.18);
-    opacity:.95;
+      0 0 16px rgba(255,255,255,0.35),
+      0 0 42px rgba(255,255,255,0.25),
+      0 0 70px rgba(255,255,255,0.18);
+    opacity: 0.95;
   }
-  50%{
+  50% {
     text-shadow:
-      0 0 18px rgba(255,255,255,0.38),
-      0 0 52px rgba(255,255,255,0.28);
-    opacity:1;
+      0 0 26px rgba(255,255,255,0.55),
+      0 0 68px rgba(255,255,255,0.40),
+      0 0 110px rgba(255,255,255,0.30);
+    opacity: 1;
   }
 }
+
 
 .clientName{
   font-size:clamp(52px,5.5vw,110px);
