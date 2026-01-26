@@ -1,19 +1,26 @@
 // =======================================================
-// Smooth Studios TV Dashboard - script.js (FINAL)
+// Smooth Studios TV Dashboard - script.js (ULTRA SMOOTH)
 // =======================================================
-// - Uses JSONP to avoid CORS issues with Apps Script
+// - Polls Apps Script FEED every 10s (safe)
+// - Countdown updates locally ~10x/sec (ultra smooth)
 // - Shows session UI ONLY when isLive === true
 // - Otherwise shows bouncing logo screensaver
-// - Displays client's FIRST name only
+// - Adds "Appointment Time:" prefix
+// - Adds minutes/seconds indicators (m / s) next to numbers
+// - Prevents 1-second screensaver flash on load
 // =======================================================
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
 
 /* =========================
-   CUSTOMIZE: Refresh Rate
-   ========================= */
-const REFRESH_MS = 1000;
+   Refresh Settings
+   =========================
+   FEED_REFRESH_MS = how often we ask Google for updated event info
+   UI_TICK_MS      = how often we redraw the countdown locally
+*/
+const FEED_REFRESH_MS = 10000; // Customize: 5s / 10s / 15s (recommended 10s)
+const UI_TICK_MS = 100;        // Customize: 100ms = very smooth (10 FPS)
 
 /* =========================
    Helper Functions
@@ -36,25 +43,6 @@ function formatTimeRange(startISO, endISO) {
   return `${s.toLocaleTimeString([], opts)} – ${e.toLocaleTimeString([], opts)}`;
 }
 
-function formatTimeLeft(endISO) {
-  const now = new Date();
-  const end = new Date(endISO);
-  const ms = end - now;
-
-  if (ms <= 0) return "0:00 Left";
-
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  // Customize: if you want minutes only, replace with:
-  // return hours > 0 ? `${hours}:${pad(minutes)} Left` : `${minutes} Min Left`;
-  return hours > 0
-    ? `${hours}:${pad(minutes)}:${pad(seconds)} Left`
-    : `${minutes}:${pad(seconds)} Left`;
-}
-
 function formatDateLine() {
   const now = new Date();
   return now.toLocaleDateString([], {
@@ -73,15 +61,27 @@ const ssLogo = document.getElementById("ssLogo");
 
 const sessionUI = document.getElementById("sessionUI");
 const statusPill = document.getElementById("statusPill");
-const timeRow = document.getElementById("timeRow");
+const timeRow = document.getElementById("timeRow");      // We will use innerHTML for units
 const dateRow = document.getElementById("dateRow");
 const clientNameEl = document.getElementById("clientName");
 
 /* =========================
+   State
+   ========================= */
+let hasFetchedOnce = false;
+
+// The “current live session” details we keep locally for smooth countdown redraw
+let liveSession = null;
+// shape:
+// {
+//   title, startISO, endISO,
+//   timeRangeText,
+//   clientFirstName
+// }
+
+/* =========================
    Screensaver Bounce Logic
-   =========================
-   Customize speeds here:
-*/
+   ========================= */
 let vx = 2.6; // Customize: horizontal speed
 let vy = 2.2; // Customize: vertical speed
 let x = 60, y = 60;
@@ -92,7 +92,7 @@ function tickScreensaver() {
     return;
   }
 
-  // If screensaver hidden, keep the loop alive but do nothing
+  // Only animate if screensaver visible
   if (screensaverEl.style.display === "none") {
     requestAnimationFrame(tickScreensaver);
     return;
@@ -119,21 +119,76 @@ function tickScreensaver() {
 requestAnimationFrame(tickScreensaver);
 
 /* =========================
-   JSONP Callback (MUST be global)
+   UI Mode Switching
    ========================= */
-window.handleSmoothFeed = function (data) {
+function showScreensaver() {
+  if (sessionUI) sessionUI.classList.add("hidden");
+  if (screensaverEl) screensaverEl.style.display = "block";
+}
+
+function showSessionUI() {
+  if (screensaverEl) screensaverEl.style.display = "none";
+  if (sessionUI) sessionUI.classList.remove("hidden");
+}
+
+function hideBothUntilFirstFetch() {
+  // Prevent the “flash” where screensaver shows for a second before live appointment loads
+  if (screensaverEl) screensaverEl.style.display = "none";
+  if (sessionUI) sessionUI.classList.add("hidden");
+}
+
+/* =========================
+   Ultra Smooth Countdown Renderer
+   ========================= */
+function renderCountdown() {
   if (dateRow) dateRow.textContent = formatDateLine();
 
-  // Only show UI if LIVE
-  if (!data || !data.title || !data.isLive) {
-    if (sessionUI) sessionUI.classList.add("hidden");
-    if (screensaverEl) screensaverEl.style.display = "block";
+  // If no live session, do nothing (screensaver handles display)
+  if (!liveSession || !liveSession.endISO) return;
+
+  const now = Date.now();
+  const endMs = new Date(liveSession.endISO).getTime();
+  let msLeft = endMs - now;
+
+  if (msLeft <= 0) {
+    // Session ended — force re-check on next poll; show screensaver meanwhile
+    liveSession = null;
+    showScreensaver();
     return;
   }
 
-  // Live session
-  if (screensaverEl) screensaverEl.style.display = "none";
-  if (sessionUI) sessionUI.classList.remove("hidden");
+  const totalSeconds = Math.floor(msLeft / 1000);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  // IMPORTANT: units next to numbers
+  const leftHTML =
+    `${minutes}<span class="unit">m</span> ` +
+    `${pad(seconds)}<span class="unit">s</span> Left`;
+
+  // “Appointment Time:” prefix requested
+  if (timeRow) {
+    timeRow.innerHTML = `Appointment Time: ${liveSession.timeRangeText}  •  ${leftHTML}`;
+  }
+}
+
+/* =========================
+   JSONP Callback (MUST be global)
+   ========================= */
+window.handleSmoothFeed = function (data) {
+  hasFetchedOnce = true;
+
+  if (dateRow) dateRow.textContent = formatDateLine();
+
+  // If NOT live -> screensaver only (your requested behavior)
+  if (!data || !data.title || !data.isLive) {
+    liveSession = null;
+    showScreensaver();
+    return;
+  }
+
+  // LIVE -> show session UI immediately
+  showSessionUI();
 
   if (statusPill) {
     statusPill.textContent = "In Session";
@@ -143,18 +198,23 @@ window.handleSmoothFeed = function (data) {
   const firstName = extractFirstName(data.title);
   if (clientNameEl) clientNameEl.textContent = firstName;
 
-  const timeRange = formatTimeRange(data.startISO, data.endISO);
-  const timeLeft = formatTimeLeft(data.endISO);
+  // Save details for ultra-smooth countdown updates
+  liveSession = {
+    title: data.title,
+    startISO: data.startISO,
+    endISO: data.endISO,
+    timeRangeText: formatTimeRange(data.startISO, data.endISO),
+    clientFirstName: firstName,
+  };
 
-  // Customize: change separators/wording here
-  if (timeRow) timeRow.textContent = `${timeRange}  •  ${timeLeft}`;
+  // Render immediately (so it updates instantly on fetch)
+  renderCountdown();
 };
 
 /* =========================
    JSONP Loader
    ========================= */
 function loadFeed() {
-  // Remove old JSONP script tag
   const old = document.getElementById("jsonp");
   if (old) old.remove();
 
@@ -164,16 +224,32 @@ function loadFeed() {
   // IMPORTANT: callback must match window.handleSmoothFeed
   s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
 
-  // If the request fails, default to screensaver (never stuck loading)
   s.onerror = () => {
-    if (sessionUI) sessionUI.classList.add("hidden");
-    if (screensaverEl) screensaverEl.style.display = "block";
+    // If feed fails:
+    // - If we haven't fetched once yet, keep both hidden (no flash)
+    // - After first fetch, fallback to screensaver
+    if (!hasFetchedOnce) {
+      hideBothUntilFirstFetch();
+    } else {
+      liveSession = null;
+      showScreensaver();
+    }
   };
 
   document.body.appendChild(s);
 }
 
-// Start
+/* =========================
+   Start
+   ========================= */
 if (dateRow) dateRow.textContent = formatDateLine();
+
+// Prevent initial “screensaver flash”
+hideBothUntilFirstFetch();
+
+// Load feed immediately, then poll
 loadFeed();
-setInterval(loadFeed, REFRESH_MS);
+setInterval(loadFeed, FEED_REFRESH_MS);
+
+// Ultra-smooth countdown ticking (local only)
+setInterval(renderCountdown, UI_TICK_MS);
