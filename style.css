@@ -4,10 +4,11 @@
   /* =========================
      BACKGROUND (Glassy Red)
      ========================= */
-  --bgRed1: #2a060a;   /* deep wine */
-  --bgRed2: #0f0506;   /* near-black red */
-  --bgGlowA: rgba(255, 60, 90, 0.18);
-  --bgGlowB: rgba(255, 90, 120, 0.10);
+  --bgRed1: #2a060a;    /* deep wine */
+  --bgRed2: #0f0506;    /* near-black red */
+  --bgGlowA: rgba(255, 60, 90, 0.20);
+  --bgGlowB: rgba(255, 90, 120, 0.12);
+  --bgGlowC: rgba(255, 255, 255, 0.06);
 
   /* Glass card */
   --glass: rgba(255,255,255,0.10);
@@ -20,14 +21,12 @@
 
   /* =========================
      CLIENT NAME COLOR
-     =========================
-     Customize these gradient stops any time:
-  */
-  --nameGradA: #ff4d6d; /* hot pink-red */
+     ========================= */
+  --nameGradA: #ff4d6d; /* red-pink */
   --nameGradB: #ffcc66; /* warm gold */
 
   /* =========================
-     URGENT TIMER COLOR (<=10 min)
+     URGENT TIMER COLOR
      ========================= */
   --urgent: #ff3b5c;
 }
@@ -47,7 +46,7 @@ body{
   background:
     radial-gradient(900px 520px at 20% 25%, var(--bgGlowA), transparent 60%),
     radial-gradient(800px 520px at 80% 65%, var(--bgGlowB), transparent 60%),
-    radial-gradient(700px 420px at 55% 35%, rgba(255,255,255,0.06), transparent 70%),
+    radial-gradient(700px 420px at 55% 35%, var(--bgGlowC), transparent 70%),
     linear-gradient(135deg, var(--bgRed1), var(--bgRed2));
   filter: saturate(1.15);
 }
@@ -58,7 +57,7 @@ body{
 .screensaver{
   position:fixed;
   inset:0;
-  display:block; /* visible by default; JS will hide both until first fetch to avoid flash */
+  display:block; /* JS hides both until first fetch to avoid flash */
 }
 
 .ssLogo{
@@ -91,30 +90,36 @@ body{
   position: relative;
   width:min(92vw, 1500px);
   border-radius: 30px;
-
-  background:
-    linear-gradient(180deg, var(--glass), var(--glass2));
+  background: linear-gradient(180deg, var(--glass), var(--glass2));
   border: 1px solid var(--stroke);
   box-shadow: var(--shadow);
-  padding: 64px 52px 52px;
-
+  padding: 70px 52px 52px; /* extra top padding to account for topLogo */
   backdrop-filter: blur(16px);
 }
 
 /* =========================
    Long Logo Sitting "On Top"
-   ========================= */
+   =========================
+   NOTE: If your PNG has uneven transparent padding, it can LOOK off-center.
+   Quick fix: adjust --logoNudgePX below.
+*/
+:root{
+  --logoNudgePX: 0px; /* Customize: try 4px or -4px if it looks off */
+}
+
 .topLogo{
   position:absolute;
   left: 50%;
-  top: -38px;                 /* Customize: how far it sits above card */
-  transform: translateX(-50%);
-  height: 72px;               /* Customize: long logo size */
+  top: -44px;
+  transform: translateX(calc(-50% + var(--logoNudgePX)));
+  display:block;
+
+  height: 74px;
   width: auto;
 
-  padding: 10px 16px;         /* creates a little glass plate behind it */
+  padding: 12px 18px;
   border-radius: 18px;
-  background: rgba(0,0,0,0.20);
+  background: rgba(0,0,0,0.18);
   border: 1px solid rgba(255,255,255,0.14);
   backdrop-filter: blur(10px);
 
@@ -125,32 +130,33 @@ body{
    Headline (Uppercase)
    ========================= */
 .headline{
-  text-transform: uppercase;   /* Welcome + name uppercase */
+  text-transform: uppercase;
   font-weight: 950;
-  letter-spacing: 0.06em;
   line-height: 1.06;
+
+  /* Better default tracking for uppercase */
+  letter-spacing: 0.035em;
 
   /* Big, TV-friendly */
   font-size: clamp(38px, 4.6vw, 84px);
 }
 
-/* Keep the welcome and name on one line when possible */
 .welcomeText{
-  display: inline;
+  display:inline;
   margin-right: 18px;
 }
 
 /* =========================
-   Client Name (Glow Pulse)
+   Client Name (better kerning + glow pulse)
    ========================= */
 @keyframes nameGlowPulse {
   0%, 100% {
-    filter: drop-shadow(0 8px 22px rgba(0,0,0,0.40));
-    opacity: 0.95;
+    filter: drop-shadow(0 10px 24px rgba(0,0,0,0.40));
+    opacity: 0.96;
     transform: translateY(0);
   }
   50% {
-    filter: drop-shadow(0 12px 34px rgba(255, 120, 160, 0.22));
+    filter: drop-shadow(0 14px 36px rgba(255, 120, 160, 0.24));
     opacity: 1;
     transform: translateY(-1px);
   }
@@ -159,14 +165,18 @@ body{
 .clientName{
   display:inline-block;
 
+  /* Name-specific kerning (uppercase looks better slightly tighter) */
+  letter-spacing: 0.02em;   /* Customize: 0.00–0.04em */
+  margin-left: 10px;
+
   /* Fun gradient fill */
   background: linear-gradient(90deg, var(--nameGradA), var(--nameGradB));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
-  /* Constant subtle animation */
-  animation: nameGlowPulse 2.6s ease-in-out infinite; /* Customize: speed */
+  /* Constant subtle glow pulse */
+  animation: nameGlowPulse 2.6s ease-in-out infinite;
 }
 
 /* ==========
@@ -193,15 +203,30 @@ body{
 
 /* Units for countdown (m / s) */
 .unit{
-  font-size: 0.75em;     /* Customize: smaller unit text */
+  font-size: 0.75em;
   opacity: 0.85;
   margin-left: 4px;
 }
 
 /* =========================
-   URGENT timer styling
+   URGENT timer pulsing red (<=10:00)
    ========================= */
+@keyframes urgentPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 10px 26px rgba(255, 59, 92, 0.10));
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.015);
+    filter: drop-shadow(0 16px 40px rgba(255, 59, 92, 0.22));
+    opacity: 1;
+  }
+}
+
 .urgent{
   color: var(--urgent);
-  text-shadow: 0 10px 32px rgba(255, 59, 92, 0.18);
+  text-shadow: 0 10px 32px rgba(255, 59, 92, 0.20);
+  animation: urgentPulse 900ms ease-in-out infinite;
+  transform-origin: left center;
 }
