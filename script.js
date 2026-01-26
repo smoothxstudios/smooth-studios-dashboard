@@ -46,7 +46,7 @@ async function refresh() {
       return;
     }
 
-    const displayName = extractDisplayName(data.title);
+    const displayName = extractFirstName(data.title);
     const timeRange = formatTimeRange(data.startISO, data.endISO);
     const timeLeft = formatTimeLeft(data.endISO);
 
