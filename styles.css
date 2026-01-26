@@ -1,0 +1,26 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  display: grid;
+  place-items: center;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #000;
+  color: #fff;
+}
+.wrap {
+  width: min(92vw, 1400px);
+  text-align: center;
+}
+.line {
+  font-size: clamp(28px, 4.2vw, 64px);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+.sub {
+  margin-top: 18px;
+  font-size: clamp(16px, 2vw, 28px);
+  opacity: 0.85;
+}
