@@ -47,6 +47,8 @@ body{
   will-change: transform, filter;
 }
 
+.bg { animation: bgDrift 10s ease-in-out infinite; }
+
 .noise{
   position:fixed;
   inset:0;
