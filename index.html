@@ -1,3 +1,4 @@
+<!-- index.html (FULL) -->
 <!doctype html>
 <html>
 <head>
@@ -9,29 +10,34 @@
 
 <body>
   <div class="bg"></div>
+  <div class="noise"></div>
 
-  <!-- Screensaver -->
-  <div id="screensaver" class="screensaver">
+  <!-- SCREENSAVER (fades in/out) -->
+  <div id="screensaver" class="screensaver isHidden">
     <img id="ssLogo" class="ssLogo" src="logo.png" alt="Smooth Studios Logo" />
   </div>
 
-  <!-- Session UI -->
-  <main id="sessionUI" class="wrap hidden">
-    <div class="card">
+  <!-- SESSION UI (fades in/out) -->
+  <main id="sessionUI" class="wrap isHidden" aria-live="polite">
+    <div class="stack">
+      <div class="card">
+        <div class="headline">WELCOME TO SMOOTH STUDIOS</div>
 
-      <div class="headline">
-        WELCOME TO SMOOTH STUDIOS
+        <div class="clientLine">
+          <span class="clientName" id="clientName">CLIENT</span>
+        </div>
+
+        <div class="meta">
+          <div class="metaRow" id="timeRow">APPOINTMENT TIME: —</div>
+          <div class="metaRow muted" id="dateRow">—</div>
+        </div>
       </div>
 
-      <div class="clientLine">
-        <span class="clientName" id="clientName">CLIENT</span>
+      <!-- NEXT UP bubble (shows only in last 10 mins AND if next exists) -->
+      <div id="nextUpBubble" class="nextUp isHidden">
+        <div class="nextUpLabel">UP NEXT</div>
+        <div class="nextUpValue" id="nextUpValue">—</div>
       </div>
-
-      <div class="meta">
-        <div class="metaRow" id="timeRow">APPOINTMENT TIME: —</div>
-        <div class="metaRow muted" id="dateRow">—</div>
-      </div>
-
     </div>
   </main>
 
