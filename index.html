@@ -10,22 +10,23 @@
 <body>
   <div class="bg"></div>
 
-  <!-- SCREENSAVER MODE (shows when NOT currently in session) -->
+  <!-- SCREENSAVER MODE -->
   <div id="screensaver" class="screensaver">
-    <!-- Customize: swap logo.png with your file name if needed -->
     <img id="ssLogo" class="ssLogo" src="logo.png" alt="Smooth Studios Logo" />
   </div>
 
-  <!-- SESSION CARD (shows ONLY when currently in session) -->
+  <!-- SESSION UI (only when isLive === true) -->
   <main id="sessionUI" class="wrap hidden">
     <div class="card">
       <div class="top">
         <div class="brand">
-          <!-- Logo in the header -->
           <div class="logoWrap">
-            <!-- Customize: change logo size in CSS: .headerLogo -->
             <img class="headerLogo" src="logo.png" alt="Smooth Studios Logo" />
           </div>
+          <div class="brandtext">
+            <div class="brandtag">Studio Schedule</div>
+          </div>
+        </div>
 
         <div class="pill live" id="statusPill">In Session</div>
       </div>
