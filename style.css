@@ -156,6 +156,16 @@ body{
   background-clip: text;
   color: transparent;
 
+   background: var(--clientSolid);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  font-size: 1.05em;
+  letter-spacing: 0.06em; /* optional: makes uppercase look cleaner */
+}
+
+
   /* Customize: remove this if you want it flatter */
   text-shadow: 0 10px 30px rgba(0,0,0,0.35);
 
