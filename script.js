@@ -9,7 +9,7 @@ const APPS_SCRIPT_URL =
    FEED_REFRESH_MS: fetches event info from Apps Script
    UI_TICK_MS:      redraws countdown locally (smooth)
 */
-const FEED_REFRESH_MS = 10000; // keep this safe for Apps Script
+const FEED_REFRESH_MS = 10000; // safe for Apps Script
 const UI_TICK_MS = 100;        // smooth countdown
 
 function pad(n) {
@@ -147,60 +147,4 @@ function renderCountdown() {
 
   if (timeRow) {
     timeRow.innerHTML =
-      `APPOINTMENT TIME: ${liveSession.timeRangeText}  •  ${leftHTML}`;
-  }
-}
-
-/* =========================
-   JSONP Callback (MUST be global)
-   ========================= */
-window.handleSmoothFeed = function (data) {
-  hasFetchedOnce = true;
-  if (dateRow) dateRow.textContent = formatDateLine();
-
-  if (!data || !data.title || !data.isLive) {
-    liveSession = null;
-    showScreensaver();
-    return;
-  }
-
-  showSessionUI();
-
-  const firstName = extractFirstName(data.title).toUpperCase();
-  if (clientNameEl) clientNameEl.textContent = firstName;
-
-  liveSession = {
-    endISO: data.endISO,
-    timeRangeText: formatTimeRange(data.startISO, data.endISO),
-  };
-
-  renderCountdown();
-};
-
-/* =========================
-   JSONP Loader
-   ========================= */
-function loadFeed() {
-  const old = document.getElementById("jsonp");
-  if (old) old.remove();
-
-  const s = document.createElement("script");
-  s.id = "jsonp";
-  s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
-
-  s.onerror = () => {
-    if (!hasFetchedOnce) hideBothUntilFirstFetch();
-    else showScreensaver();
-  };
-
-  document.body.appendChild(s);
-}
-
-/* =========================
-   Start
-   ========================= */
-if (dateRow) dateRow.textContent = formatDateLine();
-hideBothUntilFirstFetch();
-loadFeed();
-setInterval(loadFeed, FEED_REFRESH_MS);
-setInterval(renderCountdown, UI_TICK_MS);
+      `APPOINTMENT TIME: ${liveSession.timeRangeText}  •  ${leftHTML}
