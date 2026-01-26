@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
 
 function pad(n){ return String(n).padStart(2,"0"); }
 
