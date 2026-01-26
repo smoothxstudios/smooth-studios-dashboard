@@ -20,7 +20,9 @@ function formatTimeRange(start, end) {
 }
 
 function formatTimeLeft(endISO) {
-  const now = new Date();
+  const now = new Date(
+  Utilities.formatDate(new Date(), TIMEZONE, "yyyy-MM-dd'T'HH:mm:ss")
+);
   const end = new Date(endISO);
   let ms = end - now;
 
