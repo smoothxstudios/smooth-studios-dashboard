@@ -2,6 +2,13 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb
 
 function pad(n) { return String(n).padStart(2, "0"); }
 
+function extractDisplayName(eventTitle) {
+  if (!eventTitle) return "";
+  // Supports " - ", " – ", " — "
+  const parts = eventTitle.split(/\s[-–—]\s/);
+  return (parts[0] || eventTitle).trim();
+}
+
 function formatTimeRange(start, end) {
   const s = new Date(start);
   const e = new Date(end);
@@ -37,18 +44,20 @@ async function refresh() {
       return;
     }
 
+    const displayName = extractDisplayName(data.title);
     const timeRange = formatTimeRange(data.startISO, data.endISO);
     const timeLeft = formatTimeLeft(data.endISO);
 
-    // Main line exactly how you asked, but readable on TV:
-    lineEl.textContent = `Welcome To Smooth Studios — ${data.title}`;
-    subEl.textContent = `${timeRange} — ${timeLeft}${data.isLive ? " — In Session" : ""}`;
+    // Exact format you requested:
+    // Welcome To Smooth Studios "Person/Organization Name" - Booking Time - amount of booking time left
+    lineEl.textContent = `Welcome To Smooth Studios "${displayName}"`;
+    subEl.textContent = `${timeRange} - ${timeLeft}${data.isLive ? "" : " - Up Next"}`;
   } catch (e) {
     document.getElementById("line").textContent = "Welcome To Smooth Studios";
     document.getElementById("sub").textContent = "Connecting…";
   }
 }
 
-// Update every 10 seconds so “time left” feels live
+// Updates the “time left” in real time
 refresh();
 setInterval(refresh, 10000);
