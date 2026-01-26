@@ -1,14 +1,4 @@
-// =======================================================
-// Smooth Studios TV Dashboard - script.js (ULTRA SMOOTH)
-// =======================================================
-// - Polls Apps Script FEED every 10s (safe)
-// - Countdown updates locally ~10x/sec (ultra smooth)
-// - Shows session UI ONLY when isLive === true
-// - Otherwise shows bouncing logo screensaver
-// - Adds "Appointment Time:" prefix
-// - Adds minutes/seconds indicators (m / s) next to numbers
-// - Prevents 1-second screensaver flash on load
-// =======================================================
+// script.js (FULL) — Ultra-smooth countdown + uppercase + red timer <= 10 min
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
@@ -16,24 +6,25 @@ const APPS_SCRIPT_URL =
 /* =========================
    Refresh Settings
    =========================
-   FEED_REFRESH_MS = how often we ask Google for updated event info
-   UI_TICK_MS      = how often we redraw the countdown locally
+   FEED_REFRESH_MS: how often we ask Google for updated event info
+   UI_TICK_MS:      how often we redraw countdown locally (smooth)
 */
-const FEED_REFRESH_MS = 10000; // Customize: 5s / 10s / 15s (recommended 10s)
-const UI_TICK_MS = 100;        // Customize: 100ms = very smooth (10 FPS)
+const FEED_REFRESH_MS = 10000; // Customize: 10s recommended
+const UI_TICK_MS = 100;        // 100ms feels very smooth
 
-/* =========================
-   Helper Functions
-   ========================= */
 function pad(n) {
   return String(n).padStart(2, "0");
 }
 
+/* =========================
+   Name parsing (First name only)
+   Titles like: "Akiva Bell: Studio Rental (Smooth Studios)"
+*/
 function extractFirstName(eventTitle) {
   if (!eventTitle) return "";
-  // Example: "Akiva Bell: Studio Rental (Smooth Studios)"
   const beforeColon = eventTitle.split(":")[0].trim(); // "Akiva Bell"
-  return beforeColon.split(/\s+/)[0].trim();           // "Akiva"
+  const first = beforeColon.split(/\s+/)[0].trim();    // "Akiva"
+  return first || beforeColon;
 }
 
 function formatTimeRange(startISO, endISO) {
@@ -60,8 +51,7 @@ const screensaverEl = document.getElementById("screensaver");
 const ssLogo = document.getElementById("ssLogo");
 
 const sessionUI = document.getElementById("sessionUI");
-const statusPill = document.getElementById("statusPill");
-const timeRow = document.getElementById("timeRow");      // We will use innerHTML for units
+const timeRow = document.getElementById("timeRow");
 const dateRow = document.getElementById("dateRow");
 const clientNameEl = document.getElementById("clientName");
 
@@ -70,14 +60,10 @@ const clientNameEl = document.getElementById("clientName");
    ========================= */
 let hasFetchedOnce = false;
 
-// The “current live session” details we keep locally for smooth countdown redraw
+// Live session cached locally for ultra-smooth countdown redraw
 let liveSession = null;
 // shape:
-// {
-//   title, startISO, endISO,
-//   timeRangeText,
-//   clientFirstName
-// }
+// { title, startISO, endISO, timeRangeText, firstName }
 
 /* =========================
    Screensaver Bounce Logic
@@ -92,7 +78,6 @@ function tickScreensaver() {
     return;
   }
 
-  // Only animate if screensaver visible
   if (screensaverEl.style.display === "none") {
     requestAnimationFrame(tickScreensaver);
     return;
@@ -119,7 +104,7 @@ function tickScreensaver() {
 requestAnimationFrame(tickScreensaver);
 
 /* =========================
-   UI Mode Switching
+   Mode Switching
    ========================= */
 function showScreensaver() {
   if (sessionUI) sessionUI.classList.add("hidden");
@@ -132,26 +117,26 @@ function showSessionUI() {
 }
 
 function hideBothUntilFirstFetch() {
-  // Prevent the “flash” where screensaver shows for a second before live appointment loads
+  // Prevent “flash” on load
   if (screensaverEl) screensaverEl.style.display = "none";
   if (sessionUI) sessionUI.classList.add("hidden");
 }
 
 /* =========================
    Ultra Smooth Countdown Renderer
+   - Timer turns RED when 10 minutes and under
+   - Adds m/s indicators next to numbers
    ========================= */
 function renderCountdown() {
   if (dateRow) dateRow.textContent = formatDateLine();
 
-  // If no live session, do nothing (screensaver handles display)
   if (!liveSession || !liveSession.endISO) return;
 
-  const now = Date.now();
+  const nowMs = Date.now();
   const endMs = new Date(liveSession.endISO).getTime();
-  let msLeft = endMs - now;
+  let msLeft = endMs - nowMs;
 
   if (msLeft <= 0) {
-    // Session ended — force re-check on next poll; show screensaver meanwhile
     liveSession = null;
     showScreensaver();
     return;
@@ -161,14 +146,19 @@ function renderCountdown() {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  // IMPORTANT: units next to numbers
+  // Turn timer red when <= 10 minutes
+  if (timeRow) {
+    if (minutes <= 10) timeRow.classList.add("urgent");
+    else timeRow.classList.remove("urgent");
+  }
+
   const leftHTML =
     `${minutes}<span class="unit">m</span> ` +
     `${pad(seconds)}<span class="unit">s</span> Left`;
 
-  // “Appointment Time:” prefix requested
   if (timeRow) {
-    timeRow.innerHTML = `Appointment Time: ${liveSession.timeRangeText}  •  ${leftHTML}`;
+    timeRow.innerHTML =
+      `Appointment Time: ${liveSession.timeRangeText}  •  ${leftHTML}`;
   }
 }
 
@@ -180,34 +170,30 @@ window.handleSmoothFeed = function (data) {
 
   if (dateRow) dateRow.textContent = formatDateLine();
 
-  // If NOT live -> screensaver only (your requested behavior)
+  // Only show UI if LIVE. Otherwise: screensaver.
   if (!data || !data.title || !data.isLive) {
     liveSession = null;
     showScreensaver();
     return;
   }
 
-  // LIVE -> show session UI immediately
+  // Live session UI
   showSessionUI();
 
-  if (statusPill) {
-    statusPill.textContent = "In Session";
-    statusPill.className = "pill live";
+  const firstName = extractFirstName(data.title);
+  if (clientNameEl) {
+    // We already uppercase via CSS, but this keeps it consistent everywhere.
+    clientNameEl.textContent = firstName.toUpperCase();
   }
 
-  const firstName = extractFirstName(data.title);
-  if (clientNameEl) clientNameEl.textContent = firstName;
-
-  // Save details for ultra-smooth countdown updates
   liveSession = {
     title: data.title,
     startISO: data.startISO,
     endISO: data.endISO,
     timeRangeText: formatTimeRange(data.startISO, data.endISO),
-    clientFirstName: firstName,
+    firstName,
   };
 
-  // Render immediately (so it updates instantly on fetch)
   renderCountdown();
 };
 
@@ -220,20 +206,13 @@ function loadFeed() {
 
   const s = document.createElement("script");
   s.id = "jsonp";
-
-  // IMPORTANT: callback must match window.handleSmoothFeed
   s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
 
   s.onerror = () => {
-    // If feed fails:
-    // - If we haven't fetched once yet, keep both hidden (no flash)
-    // - After first fetch, fallback to screensaver
-    if (!hasFetchedOnce) {
-      hideBothUntilFirstFetch();
-    } else {
-      liveSession = null;
-      showScreensaver();
-    }
+    // Never get stuck: before first fetch, hide both (no flash).
+    // After first fetch, fallback to screensaver.
+    if (!hasFetchedOnce) hideBothUntilFirstFetch();
+    else showScreensaver();
   };
 
   document.body.appendChild(s);
@@ -244,12 +223,12 @@ function loadFeed() {
    ========================= */
 if (dateRow) dateRow.textContent = formatDateLine();
 
-// Prevent initial “screensaver flash”
+// Prevent initial flash
 hideBothUntilFirstFetch();
 
-// Load feed immediately, then poll
+// Start feed polling
 loadFeed();
 setInterval(loadFeed, FEED_REFRESH_MS);
 
-// Ultra-smooth countdown ticking (local only)
+// Start smooth countdown redraw
 setInterval(renderCountdown, UI_TICK_MS);
