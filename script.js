@@ -2,12 +2,14 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb
 
 function pad(n) { return String(n).padStart(2, "0"); }
 
-function extractDisplayName(eventTitle) {
+function extractFirstName(eventTitle) {
   if (!eventTitle) return "";
-  // Supports " - ", " – ", " — "
-  const parts = eventTitle.split(/\s[-–—]\s/);
-  return (parts[0] || eventTitle).trim();
+  // Example: "Jasmine - Studio Rental"
+  const leftSide = eventTitle.split(/\s[-–—]\s/)[0].trim(); // "Jasmine"
+  const firstWord = leftSide.split(/\s+/)[0].trim();        // first name only
+  return firstWord || leftSide;
 }
+
 
 function formatTimeRange(start, end) {
   const s = new Date(start);
