@@ -1,13 +1,7 @@
-/* style.css (FULL) */
-
 :root{
-  /* =========================
-     BACKGROUND (Black)
-     ========================= */
   --bg1:#050505;
   --bg2:#0b0b0f;
 
-  /* Glass card */
   --glass: rgba(255,255,255,0.08);
   --glass2: rgba(255,255,255,0.04);
   --stroke: rgba(255,255,255,0.12);
@@ -16,10 +10,7 @@
   --text: rgba(255,255,255,0.96);
   --muted: rgba(255,255,255,0.72);
 
-  /* =========================
-     URGENT TIMER (More RED)
-     ========================= */
-  --urgent: #ff1b3a; /* brighter red (less crimson) */
+  --urgent: #ff1b3a;
 }
 
 *{ box-sizing:border-box; }
@@ -31,6 +22,7 @@ body{
   overflow:hidden;
 }
 
+/* Background */
 .bg{
   position:fixed;
   inset:0;
@@ -38,176 +30,116 @@ body{
     radial-gradient(1200px 600px at 20% 20%, rgba(255,255,255,0.07), transparent 60%),
     radial-gradient(900px 500px at 80% 60%, rgba(255,255,255,0.05), transparent 60%),
     linear-gradient(135deg, var(--bg1), var(--bg2));
-  filter: saturate(1.02);
 }
 
-/* ==========
-   Screensaver
-   ========== */
+/* Screensaver */
 .screensaver{
   position:fixed;
   inset:0;
-  display:block; /* JS hides both until first fetch to avoid flash */
 }
 
 .ssLogo{
   position:absolute;
-  left: 60px;
-  top: 60px;
-
-  width: 220px;
-  height: auto;
-
+  width:220px;
   filter: drop-shadow(0 18px 44px rgba(0,0,0,0.65));
-  opacity: 0.96;
 }
 
-/* ==========
-   Session UI
-   ========== */
+/* Layout */
 .wrap{
-  position:relative;
   height:100%;
   display:grid;
   place-items:center;
-  padding: 6vh 6vw;
+  padding:6vh 6vw;
 }
 
 .hidden{ display:none !important; }
 
 .card{
-  position: relative;
-  width:min(92vw, 1500px);
-  border-radius: 30px;
-  background: linear-gradient(180deg, var(--glass), var(--glass2));
-  border: 1px solid var(--stroke);
-  box-shadow: var(--shadow);
-  padding: 52px 52px 52px;
-  backdrop-filter: blur(16px);
-}
+  width:min(92vw,1500px);
+  padding:56px;
+  border-radius:30px;
+  background:linear-gradient(180deg,var(--glass),var(--glass2));
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(16px);
 
-/* =========================
-   Headline (Uppercase)
-   ========================= */
-.headline{
-  text-transform: uppercase;
-  font-weight: 950;
-  line-height: 1.06;
-  letter-spacing: 0.035em;
-  font-size: clamp(38px, 4.2vw, 78px);
-}
-
-.welcomeText{
-  display:block;
-}
-
-/* =========================
-   Client Centered Line
-   ========================= */
-.clientLine{
-  margin-top: 18px;
-  display:flex;
-  justify-content:center; /* centers horizontally */
-  align-items:center;
+  /* 🔥 CENTER EVERYTHING */
   text-align:center;
-  width:100%;
 }
 
-/* =========================
-   Client Name (SOLID WHITE + WHITE GLOW)
-   - No gradient
-   - Centered
-   ========================= */
-@keyframes whiteGlowPulse {
-  0%, 100% {
+/* Headline */
+.headline{
+  text-transform:uppercase;
+  font-weight:950;
+  letter-spacing:0.035em;
+  font-size:clamp(38px,4.2vw,78px);
+}
+
+/* Client line */
+.clientLine{
+  margin-top:20px;
+}
+
+/* Client glow */
+@keyframes whiteGlowPulse{
+  0%,100%{
     text-shadow:
-      0 0 10px rgba(255,255,255,0.25),
-      0 0 28px rgba(255,255,255,0.18),
-      0 18px 44px rgba(0,0,0,0.55);
-    opacity: 0.94;
-    transform: translateY(0);
+      0 0 12px rgba(255,255,255,0.25),
+      0 0 32px rgba(255,255,255,0.18);
+    opacity:.95;
   }
-  50% {
+  50%{
     text-shadow:
-      0 0 14px rgba(255,255,255,0.36),
-      0 0 46px rgba(255,255,255,0.26),
-      0 22px 54px rgba(0,0,0,0.62);
-    opacity: 1;
-    transform: translateY(-1px);
+      0 0 18px rgba(255,255,255,0.38),
+      0 0 52px rgba(255,255,255,0.28);
+    opacity:1;
   }
 }
 
 .clientName{
-  display:inline-block;
-  text-transform: uppercase;
-  font-weight: 950;
-
-  /* Uppercase kerning tuned */
-  letter-spacing: 0.02em;
-
-  font-size: clamp(50px, 5.2vw, 104px);
-
-  /* Solid white */
-  color: rgba(255,255,255,0.98);
-
-  /* Glow pulse */
-  animation: whiteGlowPulse 2.4s ease-in-out infinite;
+  font-size:clamp(52px,5.5vw,110px);
+  font-weight:950;
+  letter-spacing:0.02em;
+  text-transform:uppercase;
+  color:white;
+  animation:whiteGlowPulse 2.4s ease-in-out infinite;
 }
 
-/* ==========
-   Meta rows
-   ========== */
+/* Meta */
 .meta{
-  margin-top: 26px;
+  margin-top:28px;
   display:flex;
   flex-direction:column;
-  gap: 12px;
+  gap:12px;
 }
 
 .metaRow{
-  font-size: clamp(18px, 2.0vw, 34px);
-  font-weight: 750;
-  letter-spacing: 0.02em;
-  color: var(--text);
+  font-size:clamp(18px,2vw,34px);
+  font-weight:750;
 }
 
-/* Keep Appointment Time left-aligned (as in your screenshot) */
-#timeRow, #dateRow{
-  text-align: left;
-}
+.muted{ color:var(--muted); }
 
-.muted{
-  color: var(--muted);
-  font-weight: 650;
-}
-
-/* Units for countdown (m / s) */
 .unit{
-  font-size: 0.75em;
-  opacity: 0.85;
-  margin-left: 4px;
+  font-size:.75em;
+  margin-left:4px;
 }
 
-/* =========================
-   URGENT timer pulsing RED (<=10:00)
-   ========================= */
-@keyframes urgentPulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 10px 26px rgba(255, 27, 58, 0.14));
-    opacity: 0.92;
+/* Urgent pulse */
+@keyframes urgentPulse{
+  0%,100%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 18px rgba(255,27,58,0.22));
   }
-  50% {
-    transform: scale(1.02);
-    filter: drop-shadow(0 18px 52px rgba(255, 27, 58, 0.30));
-    opacity: 1;
+  50%{
+    transform:scale(1.02);
+    filter:drop-shadow(0 0 42px rgba(255,27,58,0.45));
   }
 }
 
 .urgent{
-  color: var(--urgent);
-  text-shadow: 0 10px 32px rgba(255, 27, 58, 0.24);
-  animation: urgentPulse 850ms ease-in-out infinite;
-  transform-origin: left center;
+  color:var(--urgent);
+  animation:urgentPulse .85s ease-in-out infinite;
 }
+
 
