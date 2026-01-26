@@ -1,52 +1,32 @@
 // =======================================================
-// Smooth Studios TV Dashboard - script.js (UPDATED)
+// Smooth Studios TV Dashboard - script.js (FINAL)
 // =======================================================
-// What this does:
-// - Pulls today's bookings from your Google Apps Script feed (JSONP)
-// - ONLY shows the session card when an appointment is LIVE (isLive === true)
-// - Otherwise shows a bouncing-logo screensaver (burn-in safe)
-// - Displays ONLY the client's first name
-// - Shows time range + time left countdown during the live session
-//
-// Customize later:
-// - REFRESH_MS (how often it polls the feed)
-// - vx/vy (screensaver speed)
-// - timeRow text formatting
+// - Uses JSONP to avoid CORS issues with Apps Script
+// - Shows session UI ONLY when isLive === true
+// - Otherwise shows bouncing logo screensaver
+// - Displays client's FIRST name only
 // =======================================================
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
 
 /* =========================
-   Customize Refresh Interval
-   =========================
-   If you want smoother countdown updates, set this to 3000.
-*/
+   CUSTOMIZE: Refresh Rate
+   ========================= */
 const REFRESH_MS = 10000;
 
+/* =========================
+   Helper Functions
+   ========================= */
 function pad(n) {
   return String(n).padStart(2, "0");
 }
 
-const DEBUG = true; // turn off later
-function debug(msg){
-  if(!DEBUG) return;
-  const el = document.getElementById("timeRow");
-  if(el) el.textContent = msg;
-}
-
-/* =========================
-   Client Name Parsing
-   =========================
-   Your titles look like:
-   "Akiva Bell: Studio Rental (Smooth Studios)"
-   We want: "Akiva"
-*/
 function extractFirstName(eventTitle) {
   if (!eventTitle) return "";
+  // Example: "Akiva Bell: Studio Rental (Smooth Studios)"
   const beforeColon = eventTitle.split(":")[0].trim(); // "Akiva Bell"
-  const firstWord = beforeColon.split(/\s+/)[0].trim(); // "Akiva"
-  return firstWord || beforeColon;
+  return beforeColon.split(/\s+/)[0].trim();           // "Akiva"
 }
 
 function formatTimeRange(startISO, endISO) {
@@ -59,7 +39,7 @@ function formatTimeRange(startISO, endISO) {
 function formatTimeLeft(endISO) {
   const now = new Date();
   const end = new Date(endISO);
-  let ms = end - now;
+  const ms = end - now;
 
   if (ms <= 0) return "0:00 Left";
 
@@ -68,7 +48,7 @@ function formatTimeLeft(endISO) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  // Customize: if you only want minutes (no seconds), change return to:
+  // Customize: if you want minutes only, replace with:
   // return hours > 0 ? `${hours}:${pad(minutes)} Left` : `${minutes} Min Left`;
   return hours > 0
     ? `${hours}:${pad(minutes)}:${pad(seconds)} Left`
@@ -86,7 +66,7 @@ function formatDateLine() {
 }
 
 /* =========================
-   UI Elements (must match index.html)
+   UI Elements
    ========================= */
 const screensaverEl = document.getElementById("screensaver");
 const ssLogo = document.getElementById("ssLogo");
@@ -100,15 +80,19 @@ const clientNameEl = document.getElementById("clientName");
 /* =========================
    Screensaver Bounce Logic
    =========================
-   Customize speed below:
+   Customize speeds here:
 */
-let vx = 2.6; // Customize: horizontal speed (higher = faster)
-let vy = 2.2; // Customize: vertical speed (higher = faster)
-let x = 60,
-  y = 60;
+let vx = 2.6; // Customize: horizontal speed
+let vy = 2.2; // Customize: vertical speed
+let x = 60, y = 60;
 
 function tickScreensaver() {
-  // If screensaver hidden, keep loop alive but do nothing
+  if (!screensaverEl || !ssLogo) {
+    requestAnimationFrame(tickScreensaver);
+    return;
+  }
+
+  // If screensaver hidden, keep the loop alive but do nothing
   if (screensaverEl.style.display === "none") {
     requestAnimationFrame(tickScreensaver);
     return;
@@ -124,22 +108,10 @@ function tickScreensaver() {
   x += vx;
   y += vy;
 
-  if (x <= 0) {
-    x = 0;
-    vx *= -1;
-  }
-  if (y <= 0) {
-    y = 0;
-    vy *= -1;
-  }
-  if (x + lw >= w) {
-    x = w - lw;
-    vx *= -1;
-  }
-  if (y + lh >= h) {
-    y = h - lh;
-    vy *= -1;
-  }
+  if (x <= 0) { x = 0; vx *= -1; }
+  if (y <= 0) { y = 0; vy *= -1; }
+  if (x + lw >= w) { x = w - lw; vx *= -1; }
+  if (y + lh >= h) { y = h - lh; vy *= -1; }
 
   ssLogo.style.transform = `translate(${x}px, ${y}px)`;
   requestAnimationFrame(tickScreensaver);
@@ -147,22 +119,19 @@ function tickScreensaver() {
 requestAnimationFrame(tickScreensaver);
 
 /* =========================
-   JSONP Feed Loader
-   =========================
-   Apps Script returns JSON OR JSONP when callback is provided.
-*/
+   JSONP Callback (MUST be global)
+   ========================= */
 window.handleSmoothFeed = function (data) {
-  // Always show date line (even on screensaver)
   if (dateRow) dateRow.textContent = formatDateLine();
 
-  // NOT LIVE? -> screensaver only (behavior you requested)
+  // Only show UI if LIVE
   if (!data || !data.title || !data.isLive) {
     if (sessionUI) sessionUI.classList.add("hidden");
     if (screensaverEl) screensaverEl.style.display = "block";
     return;
   }
 
-  // LIVE -> show session UI
+  // Live session
   if (screensaverEl) screensaverEl.style.display = "none";
   if (sessionUI) sessionUI.classList.remove("hidden");
 
@@ -181,18 +150,22 @@ window.handleSmoothFeed = function (data) {
   if (timeRow) timeRow.textContent = `${timeRange}  •  ${timeLeft}`;
 };
 
+/* =========================
+   JSONP Loader
+   ========================= */
 function loadFeed() {
+  // Remove old JSONP script tag
   const old = document.getElementById("jsonp");
   if (old) old.remove();
 
   const s = document.createElement("script");
   s.id = "jsonp";
 
-  // callback name must match window.handleSmoothFeed
+  // IMPORTANT: callback must match window.handleSmoothFeed
   s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
 
+  // If the request fails, default to screensaver (never stuck loading)
   s.onerror = () => {
-    // If feed fails, default to screensaver
     if (sessionUI) sessionUI.classList.add("hidden");
     if (screensaverEl) screensaverEl.style.display = "block";
   };
