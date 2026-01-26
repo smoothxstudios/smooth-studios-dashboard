@@ -10,13 +10,18 @@
   --muted: rgba(255,255,255,0.72);
 
   /* =========================
-     Customize Client Name Color
+     CUSTOMIZE CLIENT NAME COLOR
      =========================
-     Option 1 (solid): set --clientColor: #34d399;
-     Option 2 (gradient): keep these and it’ll look “fun”
+     Want a solid color?
+       - Set color: var(--clientSolid);
+       - And remove gradient lines in .clientName
+
+     Want a different gradient?
+       - Change these two values
   */
   --clientGradA: #7c3aed; /* Customize: gradient start */
   --clientGradB: #22c55e; /* Customize: gradient end */
+  --clientSolid: #22c55e; /* Customize: solid option */
 }
 
 *{ box-sizing:border-box; }
@@ -44,7 +49,7 @@ body{
 .screensaver{
   position:fixed;
   inset:0;
-  display:block; /* visible by default */
+  display:block;
 }
 
 .ssLogo{
@@ -56,7 +61,6 @@ body{
   width: 220px;
   height: auto;
 
-  /* A little glow so it pops */
   filter: drop-shadow(0 18px 40px rgba(0,0,0,0.55));
   opacity: 0.95;
 }
@@ -110,12 +114,10 @@ body{
 }
 
 .headerLogo{
-  /* Customize: header logo size */
   width: 42px;
   height: auto;
 }
 
-.brandtext{ line-height:1.05; }
 .brandtag{
   font-size: 13px;
   color: var(--muted);
@@ -131,6 +133,7 @@ body{
   letter-spacing: 0.3px;
   white-space:nowrap;
 }
+
 .pill.live{
   background: rgba(255,255,255,0.16);
   border-color: rgba(255,255,255,0.22);
@@ -144,17 +147,20 @@ body{
 }
 
 /* =========================
-   Fun Client Name Styling
+   CLIENT NAME FUN STYLE
    ========================= */
 .clientName{
-  /* Customize: change gradient colors in :root */
+  /* Fun gradient text */
   background: linear-gradient(90deg, var(--clientGradA), var(--clientGradB));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
-  /* Optional “pop” outline */
+  /* Customize: remove this if you want it flatter */
   text-shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+  /* Customize: make name slightly larger */
+  font-size: 1.05em;
 }
 
 .meta{
