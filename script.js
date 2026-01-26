@@ -152,7 +152,7 @@ function renderCountdown(){
   // NEXT UP bubble:
   // show only in last 10 mins AND only if next exists (and starts at/after current end)
   const hasNext = Boolean(liveSession.nextTitle && liveSession.nextStartISO);
-  const inLastTen = totalSeconds <= 3600;
+  const inLastTen = totalSeconds <= 600;
 
   if(hasNext && inLastTen){
     const nextName = extractFirstName(liveSession.nextTitle);
