@@ -1,27 +1,35 @@
-:root{
-  --bg1:#050505;
-  --bg2:#0b0b0f;
+/* style.css (FULL) */
 
-  --glass: rgba(255,255,255,0.08);
-  --stroke: rgba(255,255,255,0.12);
-  --shadow: 0 20px 60px rgba(0,0,0,0.55);
+:root{
+  /* =========================
+     BACKGROUND (Glassy Red)
+     ========================= */
+  --bgRed1: #2a060a;   /* deep wine */
+  --bgRed2: #0f0506;   /* near-black red */
+  --bgGlowA: rgba(255, 60, 90, 0.18);
+  --bgGlowB: rgba(255, 90, 120, 0.10);
+
+  /* Glass card */
+  --glass: rgba(255,255,255,0.10);
+  --glass2: rgba(255,255,255,0.06);
+  --stroke: rgba(255,255,255,0.14);
+  --shadow: 0 24px 70px rgba(0,0,0,0.55);
 
   --text: rgba(255,255,255,0.96);
   --muted: rgba(255,255,255,0.72);
 
   /* =========================
-     CUSTOMIZE CLIENT NAME COLOR
+     CLIENT NAME COLOR
      =========================
-     Want a solid color?
-       - Set color: var(--clientSolid);
-       - And remove gradient lines in .clientName
-
-     Want a different gradient?
-       - Change these two values
+     Customize these gradient stops any time:
   */
-  --clientGradA: #7c3aed; /* Customize: gradient start */
-  --clientGradB: #22c55e; /* Customize: gradient end */
-  --clientSolid: #e01e26; /* Customize: solid option */
+  --nameGradA: #ff4d6d; /* hot pink-red */
+  --nameGradB: #ffcc66; /* warm gold */
+
+  /* =========================
+     URGENT TIMER COLOR (<=10 min)
+     ========================= */
+  --urgent: #ff3b5c;
 }
 
 *{ box-sizing:border-box; }
@@ -37,10 +45,11 @@ body{
   position:fixed;
   inset:0;
   background:
-    radial-gradient(1200px 600px at 20% 20%, rgba(255,255,255,0.10), transparent 60%),
-    radial-gradient(900px 500px at 80% 60%, rgba(255,255,255,0.08), transparent 60%),
-    linear-gradient(135deg, var(--bg1), var(--bg2));
-  filter: saturate(1.1);
+    radial-gradient(900px 520px at 20% 25%, var(--bgGlowA), transparent 60%),
+    radial-gradient(800px 520px at 80% 65%, var(--bgGlowB), transparent 60%),
+    radial-gradient(700px 420px at 55% 35%, rgba(255,255,255,0.06), transparent 70%),
+    linear-gradient(135deg, var(--bgRed1), var(--bgRed2));
+  filter: saturate(1.15);
 }
 
 /* ==========
@@ -49,7 +58,7 @@ body{
 .screensaver{
   position:fixed;
   inset:0;
-  display:block;
+  display:block; /* visible by default; JS will hide both until first fetch to avoid flash */
 }
 
 .ssLogo{
@@ -61,8 +70,8 @@ body{
   width: 220px;
   height: auto;
 
-  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.55));
-  opacity: 0.95;
+  filter: drop-shadow(0 18px 44px rgba(0,0,0,0.65));
+  opacity: 0.96;
 }
 
 /* ==========
@@ -79,110 +88,101 @@ body{
 .hidden{ display:none !important; }
 
 .card{
+  position: relative;
   width:min(92vw, 1500px);
-  border-radius: 28px;
-  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
+  border-radius: 30px;
+
+  background:
+    linear-gradient(180deg, var(--glass), var(--glass2));
   border: 1px solid var(--stroke);
   box-shadow: var(--shadow);
-  padding: 42px 46px 46px;
-  backdrop-filter: blur(14px);
-}
+  padding: 64px 52px 52px;
 
-.top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 18px;
-  margin-bottom: 28px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap: 14px;
-}
-
-.logoWrap{
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  display:grid;
-  place-items:center;
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.14);
-  overflow:hidden;
-}
-
-.headerLogo{
-  width: 42px;
-  height: auto;
-}
-
-.brandtag{
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.pill{
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-weight: 750;
-  font-size: 14px;
-  border: 1px solid rgba(255,255,255,0.16);
-  background: rgba(0,0,0,0.20);
-  letter-spacing: 0.3px;
-  white-space:nowrap;
-}
-
-.pill.live{
-  background: rgba(255,255,255,0.16);
-  border-color: rgba(255,255,255,0.22);
-}
-
-.headline{
-  font-size: clamp(40px, 4.6vw, 86px);
-  font-weight: 900;
-  letter-spacing: 0.2px;
-  line-height: 1.08;
+  backdrop-filter: blur(16px);
 }
 
 /* =========================
-   CLIENT NAME FUN STYLE
+   Long Logo Sitting "On Top"
    ========================= */
+.topLogo{
+  position:absolute;
+  left: 50%;
+  top: -38px;                 /* Customize: how far it sits above card */
+  transform: translateX(-50%);
+  height: 72px;               /* Customize: long logo size */
+  width: auto;
+
+  padding: 10px 16px;         /* creates a little glass plate behind it */
+  border-radius: 18px;
+  background: rgba(0,0,0,0.20);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+
+  filter: drop-shadow(0 18px 44px rgba(0,0,0,0.60));
+}
+
+/* =========================
+   Headline (Uppercase)
+   ========================= */
+.headline{
+  text-transform: uppercase;   /* Welcome + name uppercase */
+  font-weight: 950;
+  letter-spacing: 0.06em;
+  line-height: 1.06;
+
+  /* Big, TV-friendly */
+  font-size: clamp(38px, 4.6vw, 84px);
+}
+
+/* Keep the welcome and name on one line when possible */
+.welcomeText{
+  display: inline;
+  margin-right: 18px;
+}
+
+/* =========================
+   Client Name (Glow Pulse)
+   ========================= */
+@keyframes nameGlowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 8px 22px rgba(0,0,0,0.40));
+    opacity: 0.95;
+    transform: translateY(0);
+  }
+  50% {
+    filter: drop-shadow(0 12px 34px rgba(255, 120, 160, 0.22));
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
 .clientName{
-  /* Fun gradient text */
-  background: var(--clientSolid);
+  display:inline-block;
+
+  /* Fun gradient fill */
+  background: linear-gradient(90deg, var(--nameGradA), var(--nameGradB));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
-   background: var(--clientSolid);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 10px 30px rgba(0,0,0,0.35);
-  font-size: 1.05em;
-  letter-spacing: 0.06em; /* optional: makes uppercase look cleaner */
+  /* Constant subtle animation */
+  animation: nameGlowPulse 2.6s ease-in-out infinite; /* Customize: speed */
 }
 
-
-  /* Customize: remove this if you want it flatter */
-  text-shadow: 0 10px 30px rgba(0,0,0,0.35);
-
-  /* Customize: make name slightly larger */
-  font-size: 1.05em;
-}
-
+/* ==========
+   Meta rows
+   ========== */
 .meta{
-  margin-top: 26px;
+  margin-top: 28px;
   display:flex;
   flex-direction:column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .metaRow{
   font-size: clamp(18px, 2.0vw, 34px);
-  font-weight: 700;
+  font-weight: 750;
+  letter-spacing: 0.02em;
   color: var(--text);
 }
 
@@ -191,12 +191,17 @@ body{
   font-weight: 650;
 }
 
-/* =========================
-   Countdown Unit Styling
-   ========================= */
+/* Units for countdown (m / s) */
 .unit{
-  font-size: 0.75em;   /* Customize: smaller unit text */
-  opacity: 0.85;       /* Customize: unit visibility */
-  margin-left: 4px;    /* space between number and unit */
+  font-size: 0.75em;     /* Customize: smaller unit text */
+  opacity: 0.85;
+  margin-left: 4px;
 }
 
+/* =========================
+   URGENT timer styling
+   ========================= */
+.urgent{
+  color: var(--urgent);
+  text-shadow: 0 10px 32px rgba(255, 59, 92, 0.18);
+}
