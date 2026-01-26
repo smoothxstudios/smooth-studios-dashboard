@@ -28,6 +28,13 @@ function pad(n) {
   return String(n).padStart(2, "0");
 }
 
+const DEBUG = true; // turn off later
+function debug(msg){
+  if(!DEBUG) return;
+  const el = document.getElementById("timeRow");
+  if(el) el.textContent = msg;
+}
+
 /* =========================
    Client Name Parsing
    =========================
