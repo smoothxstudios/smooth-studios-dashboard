@@ -9,8 +9,8 @@ const APPS_SCRIPT_URL =
    FEED_REFRESH_MS: fetches event info from Apps Script
    UI_TICK_MS:      redraws countdown locally (smooth)
 */
-const FEED_REFRESH_MS = 10000; // Customize: 10s recommended
-const UI_TICK_MS = 100;        // 100ms = smooth
+const FEED_REFRESH_MS = 10000; // keep this safe for Apps Script
+const UI_TICK_MS = 100;        // smooth countdown
 
 function pad(n) {
   return String(n).padStart(2, "0");
@@ -136,7 +136,6 @@ function renderCountdown() {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  // Pulse red when 10:00 or less
   if (timeRow) {
     if (totalSeconds <= 600) timeRow.classList.add("urgent");
     else timeRow.classList.remove("urgent");
@@ -159,7 +158,6 @@ window.handleSmoothFeed = function (data) {
   hasFetchedOnce = true;
   if (dateRow) dateRow.textContent = formatDateLine();
 
-  // Only show when LIVE (else screensaver)
   if (!data || !data.title || !data.isLive) {
     liveSession = null;
     showScreensaver();
