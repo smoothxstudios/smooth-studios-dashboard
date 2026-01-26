@@ -1,20 +1,40 @@
+<!-- index.html (FULL) -->
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Smooth Studios Display</title>
-    <link rel="sttlesheet" href="styles.css" />
-  </head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smooth Studios Display</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-  <body>
-    <div class="bg"></div>
+<body>
+  <div class="bg"></div>
 
-    <div id="screensaver" class="screensaver'>
+  <!-- SCREENSAVER MODE (shows when NOT currently in session) -->
+  <div id="screensaver" class="screensaver">
+    <!-- Customize: use logo.png (square) or swap to logolong.png if you prefer -->
+    <img id="ssLogo" class="ssLogo" src="logo.png" alt="Smooth Studios Logo" />
+  </div>
 
-      <img id="sslogo" class="sslogo" src="logo.png" alt="smooth Studios Logo" /> 
+  <!-- SESSION UI (shows ONLY when currently in session) -->
+  <main id="sessionUI" class="wrap hidden">
+    <div class="card">
+      <!-- Long logo "on top of the glass" -->
+      <img class="topLogo" src="logolong.png" alt="Smooth Studios" />
+
+      <div class="headline">
+        <span class="welcomeText">Welcome To Smooth Studios</span>
+        <span class="clientName" id="clientName">CLIENT</span>
+      </div>
+
+      <div class="meta">
+        <div class="metaRow" id="timeRow">Appointment Time: —</div>
+        <div class="metaRow muted" id="dateRow">—</div>
+      </div>
     </div>
+  </main>
 
-    
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
