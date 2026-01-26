@@ -1,47 +1,57 @@
-const TIMEZONE = "America/New_York";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
 
 function pad(n) { return String(n).padStart(2, "0"); }
 
+// Title examples you showed:
+// "Khari Jackson: Quick Studio Rental (Smooth Studios), 2pm, Smooth Studios"
+// We want ONLY first name: "Khari"
 function extractFirstName(eventTitle) {
   if (!eventTitle) return "";
-  // Example: "Jasmine - Studio Rental"
-  const leftSide = eventTitle.split(/\s[-–—]\s/)[0].trim(); // "Jasmine"
-  const firstWord = leftSide.split(/\s+/)[0].trim();        // first name only
-  return firstWord || leftSide;
+
+  // Take the first chunk before ":" OR " - " OR " – " OR " — "
+  // This handles titles like:
+  // "Khari Jackson: Quick Studio Rental..."
+  // "Jasmine - Studio Rental"
+  const firstChunk = eventTitle.split(/:|\s[-–—]\s/)[0].trim();
+
+  // First word only
+  const firstWord = firstChunk.split(/\s+/)[0].trim();
+
+  return firstWord || firstChunk;
 }
 
-
-function formatTimeRange(start, end) {
-  const s = new Date(start);
-  const e = new Date(end);
+function formatTimeRange(startISO, endISO) {
+  const s = new Date(startISO);
+  const e = new Date(endISO);
   const opts = { hour: "numeric", minute: "2-digit" };
   return `${s.toLocaleTimeString([], opts)} – ${e.toLocaleTimeString([], opts)}`;
 }
 
 function formatTimeLeft(endISO) {
-  const now = new Date(
-  Utilities.formatDate(new Date(), TIMEZONE, "yyyy-MM-dd'T'HH:mm:ss")
-);
+  const now = new Date();
   const end = new Date(endISO);
   let ms = end - now;
 
   if (ms <= 0) return "0:00 Left";
 
-  const totalMinutes = Math.floor(ms / 60000);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
 
-  return hours > 0 ? `${hours}:${pad(minutes)} Left` : `${minutes} Min Left`;
+  // If you prefer minutes only, tell me and I’ll simplify it.
+  return hours > 0
+    ? `${hours}:${pad(minutes)}:${pad(seconds)} Left`
+    : `${minutes}:${pad(seconds)} Left`;
 }
 
 async function refresh() {
+  const lineEl = document.getElementById("line");
+  const subEl = document.getElementById("sub");
+
   try {
     const res = await fetch(APPS_SCRIPT_URL, { cache: "no-store" });
     const data = await res.json();
-
-    const lineEl = document.getElementById("line");
-    const subEl = document.getElementById("sub");
 
     if (!data.title) {
       lineEl.textContent = "Welcome To Smooth Studios";
@@ -49,20 +59,24 @@ async function refresh() {
       return;
     }
 
-    const displayName = extractFirstName(data.title);
+    const firstName = extractFirstName(data.title);
     const timeRange = formatTimeRange(data.startISO, data.endISO);
-    const timeLeft = formatTimeLeft(data.endISO);
 
-    // Exact format you requested:
-    // Welcome To Smooth Studios "Person/Organization Name" - Booking Time - amount of booking time left
-    lineEl.textContent = `Welcome To Smooth Studios "${displayName}"`;
-    subEl.textContent = `${timeRange} - ${timeLeft}${data.isLive ? "" : " - Up Next"}`;
+    // Only show countdown when LIVE
+    if (data.isLive) {
+      const timeLeft = formatTimeLeft(data.endISO);
+      lineEl.textContent = `Welcome To Smooth Studios "${firstName}"`;
+      subEl.textContent = `${timeRange} - ${timeLeft}`;
+    } else {
+      lineEl.textContent = `Welcome To Smooth Studios "${firstName}"`;
+      subEl.textContent = `${timeRange} - Up Next`;
+    }
   } catch (e) {
-    document.getElementById("line").textContent = "Welcome To Smooth Studios";
-    document.getElementById("sub").textContent = "Connecting…";
+    lineEl.textContent = "Welcome To Smooth Studios";
+    subEl.textContent = "Connecting…";
   }
 }
 
-// Updates the “time left” in real time
+// Refresh often so countdown feels live
 refresh();
 setInterval(refresh, 10000);
