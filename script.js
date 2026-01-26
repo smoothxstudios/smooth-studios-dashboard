@@ -11,10 +11,8 @@ function pad(n){ return String(n).padStart(2,"0"); }
 
 function extractFirstName(eventTitle){
   if(!eventTitle) return "";
-
-  // Your titles: "Khari Jackson: Quick Studio Rental..."
-  const beforeColon = eventTitle.split(":")[0].trim(); // "Khari Jackson"
-  const firstWord = beforeColon.split(/\s+/)[0].trim(); // "Khari"
+  const beforeColon = eventTitle.split(":")[0].trim();       // "Khari Jackson"
+  const firstWord = beforeColon.split(/\s+/)[0].trim();      // "Khari"
   return firstWord || beforeColon;
 }
 
@@ -61,9 +59,7 @@ const clientNameEl = document.getElementById("clientName");
 
 /* =========================
    Screensaver Bounce Logic
-   =========================
-   Customize speed below:
-*/
+   ========================= */
 let vx = 2.6; // Customize: horizontal speed
 let vy = 2.2; // Customize: vertical speed
 let x = 60, y = 60;
@@ -100,14 +96,14 @@ requestAnimationFrame(tickScreensaver);
 window.handleSmoothFeed = function(data){
   dateRow.textContent = formatDateLine();
 
-  // If not live, go to screensaver mode
+  // NOT LIVE? -> screensaver only (this is the behavior you requested)
   if(!data || !data.title || !data.isLive){
     sessionUI.classList.add("hidden");
     screensaverEl.style.display = "block";
     return;
   }
 
-  // Live session mode
+  // LIVE -> show session UI
   screensaverEl.style.display = "none";
   sessionUI.classList.remove("hidden");
 
@@ -120,19 +116,15 @@ window.handleSmoothFeed = function(data){
   const timeRange = formatTimeRange(data.startISO, data.endISO);
   const timeLeft = formatTimeLeft(data.endISO);
 
-  // Customize: change separator / wording here
   timeRow.textContent = `${timeRange}  •  ${timeLeft}`;
 };
 
 function loadFeed(){
-  // Remove previous JSONP script if it exists
   const old = document.getElementById("jsonp");
   if (old) old.remove();
 
   const s = document.createElement("script");
   s.id = "jsonp";
-
-  // JSONP callback + cache buster
   s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
 
   s.onerror = () => {
