@@ -13,7 +13,7 @@ const APPS_SCRIPT_URL =
 /* =========================
    CUSTOMIZE: Refresh Rate
    ========================= */
-const REFRESH_MS = 10000;
+const REFRESH_MS = 1000;
 
 /* =========================
    Helper Functions
