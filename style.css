@@ -151,7 +151,7 @@ body{
    ========================= */
 .clientName{
   /* Fun gradient text */
-  background: linear-gradient(90deg, var(--clientGradA), var(--clientGradB));
+  background: var(--clientSolid);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
