@@ -1,4 +1,4 @@
-// script.js (FULL) — Ultra-smooth countdown + uppercase + red timer <= 10 min
+// script.js (FULL) — Ultra-smooth countdown + urgent pulse <= 10:00 + no flash
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
@@ -6,25 +6,21 @@ const APPS_SCRIPT_URL =
 /* =========================
    Refresh Settings
    =========================
-   FEED_REFRESH_MS: how often we ask Google for updated event info
-   UI_TICK_MS:      how often we redraw countdown locally (smooth)
+   FEED_REFRESH_MS: fetches event info from Apps Script
+   UI_TICK_MS:      redraws countdown locally (smooth)
 */
 const FEED_REFRESH_MS = 10000; // Customize: 10s recommended
-const UI_TICK_MS = 100;        // 100ms feels very smooth
+const UI_TICK_MS = 100;        // 100ms = smooth
 
 function pad(n) {
   return String(n).padStart(2, "0");
 }
 
-/* =========================
-   Name parsing (First name only)
-   Titles like: "Akiva Bell: Studio Rental (Smooth Studios)"
-*/
+/* First name only from titles like: "Akiva Bell: Studio Rental (...)" */
 function extractFirstName(eventTitle) {
   if (!eventTitle) return "";
-  const beforeColon = eventTitle.split(":")[0].trim(); // "Akiva Bell"
-  const first = beforeColon.split(/\s+/)[0].trim();    // "Akiva"
-  return first || beforeColon;
+  const beforeColon = eventTitle.split(":")[0].trim();
+  return beforeColon.split(/\s+/)[0].trim() || beforeColon;
 }
 
 function formatTimeRange(startISO, endISO) {
@@ -59,17 +55,13 @@ const clientNameEl = document.getElementById("clientName");
    State
    ========================= */
 let hasFetchedOnce = false;
-
-// Live session cached locally for ultra-smooth countdown redraw
-let liveSession = null;
-// shape:
-// { title, startISO, endISO, timeRangeText, firstName }
+let liveSession = null; // { endISO, timeRangeText }
 
 /* =========================
    Screensaver Bounce Logic
    ========================= */
-let vx = 2.6; // Customize: horizontal speed
-let vy = 2.2; // Customize: vertical speed
+let vx = 2.6;
+let vy = 2.2;
 let x = 60, y = 60;
 
 function tickScreensaver() {
@@ -117,15 +109,13 @@ function showSessionUI() {
 }
 
 function hideBothUntilFirstFetch() {
-  // Prevent “flash” on load
   if (screensaverEl) screensaverEl.style.display = "none";
   if (sessionUI) sessionUI.classList.add("hidden");
 }
 
 /* =========================
    Ultra Smooth Countdown Renderer
-   - Timer turns RED when 10 minutes and under
-   - Adds m/s indicators next to numbers
+   - Timer pulses red when <= 10:00 exactly
    ========================= */
 function renderCountdown() {
   if (dateRow) dateRow.textContent = formatDateLine();
@@ -134,7 +124,7 @@ function renderCountdown() {
 
   const nowMs = Date.now();
   const endMs = new Date(liveSession.endISO).getTime();
-  let msLeft = endMs - nowMs;
+  const msLeft = endMs - nowMs;
 
   if (msLeft <= 0) {
     liveSession = null;
@@ -146,9 +136,9 @@ function renderCountdown() {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  // Turn timer red when <= 10 minutes
+  // Pulse red when 10:00 or less
   if (timeRow) {
-    if (minutes <= 10) timeRow.classList.add("urgent");
+    if (totalSeconds <= 600) timeRow.classList.add("urgent");
     else timeRow.classList.remove("urgent");
   }
 
@@ -158,7 +148,7 @@ function renderCountdown() {
 
   if (timeRow) {
     timeRow.innerHTML =
-      `Appointment Time: ${liveSession.timeRangeText}  •  ${leftHTML}`;
+      `APPOINTMENT TIME: ${liveSession.timeRangeText}  •  ${leftHTML}`;
   }
 }
 
@@ -167,31 +157,23 @@ function renderCountdown() {
    ========================= */
 window.handleSmoothFeed = function (data) {
   hasFetchedOnce = true;
-
   if (dateRow) dateRow.textContent = formatDateLine();
 
-  // Only show UI if LIVE. Otherwise: screensaver.
+  // Only show when LIVE (else screensaver)
   if (!data || !data.title || !data.isLive) {
     liveSession = null;
     showScreensaver();
     return;
   }
 
-  // Live session UI
   showSessionUI();
 
-  const firstName = extractFirstName(data.title);
-  if (clientNameEl) {
-    // We already uppercase via CSS, but this keeps it consistent everywhere.
-    clientNameEl.textContent = firstName.toUpperCase();
-  }
+  const firstName = extractFirstName(data.title).toUpperCase();
+  if (clientNameEl) clientNameEl.textContent = firstName;
 
   liveSession = {
-    title: data.title,
-    startISO: data.startISO,
     endISO: data.endISO,
     timeRangeText: formatTimeRange(data.startISO, data.endISO),
-    firstName,
   };
 
   renderCountdown();
@@ -209,8 +191,6 @@ function loadFeed() {
   s.src = `${APPS_SCRIPT_URL}?callback=handleSmoothFeed&t=${Date.now()}`;
 
   s.onerror = () => {
-    // Never get stuck: before first fetch, hide both (no flash).
-    // After first fetch, fallback to screensaver.
     if (!hasFetchedOnce) hideBothUntilFirstFetch();
     else showScreensaver();
   };
@@ -222,13 +202,7 @@ function loadFeed() {
    Start
    ========================= */
 if (dateRow) dateRow.textContent = formatDateLine();
-
-// Prevent initial flash
 hideBothUntilFirstFetch();
-
-// Start feed polling
 loadFeed();
 setInterval(loadFeed, FEED_REFRESH_MS);
-
-// Start smooth countdown redraw
 setInterval(renderCountdown, UI_TICK_MS);
