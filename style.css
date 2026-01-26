@@ -101,7 +101,7 @@ body{
   font-weight:950;
   letter-spacing:0.02em;
   text-transform:uppercase;
-  color:white;
+  color:red;
   animation:whiteGlowPulse 2.4s ease-in-out infinite;
 }
 
