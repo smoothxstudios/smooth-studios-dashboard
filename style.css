@@ -180,3 +180,13 @@ body{
   color: var(--muted);
   font-weight: 650;
 }
+
+/* =========================
+   Countdown Unit Styling
+   ========================= */
+.unit{
+  font-size: 0.75em;   /* Customize: smaller unit text */
+  opacity: 0.85;       /* Customize: unit visibility */
+  margin-left: 4px;    /* space between number and unit */
+}
+
