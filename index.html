@@ -1,6 +1,6 @@
 <!-- index.html (FULL) -->
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -9,15 +9,16 @@
 </head>
 
 <body>
+  <!-- Ambient moving background + tint + grain -->
   <div class="bg"></div>
   <div class="noise"></div>
 
-  <!-- SCREENSAVER (fades in/out) -->
+  <!-- Screensaver -->
   <div id="screensaver" class="screensaver isHidden">
     <img id="ssLogo" class="ssLogo" src="logo.png" alt="Smooth Studios Logo" />
   </div>
 
-  <!-- SESSION UI (fades in/out) -->
+  <!-- Session UI -->
   <main id="sessionUI" class="wrap isHidden" aria-live="polite">
     <div class="stack">
       <div class="card">
@@ -33,7 +34,7 @@
         </div>
       </div>
 
-      <!-- NEXT UP bubble (shows only in last 10 mins AND if next exists) -->
+      <!-- Next Up bubble -->
       <div id="nextUpBubble" class="nextUp isHidden">
         <div class="nextUpLabel">UP NEXT</div>
         <div class="nextUpValue" id="nextUpValue">—</div>
