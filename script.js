@@ -1,9 +1,10 @@
-// script.js (FULL) — Fade transitions + Next Up bubble + Ambient BG already in CSS
+// script.js (FULL)
+// Ambient background motion + subtle grain + sync background to session urgency + Next Up bubble + fades + screensaver bounce
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
 
-const FEED_REFRESH_MS = 10000; // safe for Apps Script
+const FEED_REFRESH_MS = 10000; // Apps Script friendly
 const UI_TICK_MS = 100;        // smooth countdown
 
 // Elements
@@ -22,6 +23,7 @@ const nextUpValue = document.getElementById("nextUpValue");
 let hasFetchedOnce = false;
 let liveSession = null; // { endISO, timeRangeText, nextTitle, nextStartISO }
 
+// ---------- Helpers ----------
 function pad(n){ return String(n).padStart(2,"0"); }
 
 function extractFirstName(title){
@@ -48,9 +50,7 @@ function formatTimeOnly(iso){
   return d.toLocaleTimeString([], { hour:"numeric", minute:"2-digit" });
 }
 
-/* -----------------------
-   Fade show/hide helpers
------------------------- */
+// ---------- Fade helpers ----------
 function makeVisible(el){
   if(!el) return;
   el.classList.remove("isHidden");
@@ -67,6 +67,9 @@ function showScreensaver(){
   makeHidden(sessionUI);
   makeHidden(nextUpBubble);
   makeVisible(screensaverEl);
+
+  // Calm background when idle (customize)
+  setBackgroundUrgency(null);
 }
 
 function showSessionUI(){
@@ -80,9 +83,52 @@ function hideBothUntilFirstFetch(){
   makeHidden(nextUpBubble);
 }
 
-/* -----------------------
-   Screensaver bounce
------------------------- */
+// ---------- Background urgency sync ----------
+/**
+ * Syncs background motion + red tint to time left.
+ * - Calm: slow drift + no red wash
+ * - Urgent (<=10 mins): faster drift + red wash ramps up
+ *
+ * Customize here:
+ * - maxRedWash: how red it gets near 0
+ * - calmDur / urgentDur: drift speed
+ */
+function setBackgroundUrgency(secondsLeft){
+  const root = document.documentElement;
+
+  const calmDur = 34;     // seconds
+  const urgentDur = 14;   // seconds (faster drift)
+  const maxRedWash = 0.38; // 0.00–0.55 recommended
+
+  // No session / screensaver
+  if(secondsLeft === null || secondsLeft === undefined){
+    root.style.setProperty("--bgAnimDur", `${calmDur}s`);
+    root.style.setProperty("--bgRedWash", `0`);
+    return;
+  }
+
+  // > 10 min: calm
+  if(secondsLeft > 600){
+    root.style.setProperty("--bgAnimDur", `${calmDur}s`);
+    root.style.setProperty("--bgRedWash", `0`);
+    return;
+  }
+
+  // <= 10 min: ramp from calm → urgent
+  // t = 0 at 10min, t = 1 at 0min
+  const t = Math.min(1, Math.max(0, (600 - secondsLeft) / 600));
+
+  // Drift speed ramps down (calmDur → urgentDur)
+  const dur = calmDur - (calmDur - urgentDur) * t;
+
+  // Red wash ramps up smoothly
+  const red = maxRedWash * (t * t); // quadratic easing (soft early, stronger late)
+
+  root.style.setProperty("--bgAnimDur", `${dur.toFixed(2)}s`);
+  root.style.setProperty("--bgRedWash", `${red.toFixed(3)}`);
+}
+
+// ---------- Screensaver bounce ----------
 let x = 60, y = 60;
 let vx = 2.6, vy = 2.2;
 
@@ -113,9 +159,7 @@ function animateScreensaver(){
 }
 requestAnimationFrame(animateScreensaver);
 
-/* -----------------------
-   Countdown + Next Up logic
------------------------- */
+// ---------- UI render ----------
 function renderCountdown(){
   if(dateRow) dateRow.textContent = formatDateLine();
   if(!liveSession?.endISO) return;
@@ -134,13 +178,15 @@ function renderCountdown(){
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  // urgent <= 10:00
+  // Sync background to urgency
+  setBackgroundUrgency(totalSeconds);
+
+  // urgent timer <= 10:00
   if(timeRow){
     if(totalSeconds <= 600) timeRow.classList.add("urgent");
     else timeRow.classList.remove("urgent");
   }
 
-  // countdown display
   const leftHTML =
     `${minutes}<span class="unit">m</span> ` +
     `${pad(seconds)}<span class="unit">s</span> Left`;
@@ -149,8 +195,7 @@ function renderCountdown(){
     timeRow.innerHTML = `APPOINTMENT TIME: ${liveSession.timeRangeText} • ${leftHTML}`;
   }
 
-  // NEXT UP bubble:
-  // show only in last 10 mins AND only if next exists (and starts at/after current end)
+  // Next Up bubble: show only in last 10 mins AND if next exists
   const hasNext = Boolean(liveSession.nextTitle && liveSession.nextStartISO);
   const inLastTen = totalSeconds <= 600;
 
@@ -164,13 +209,11 @@ function renderCountdown(){
   }
 }
 
-/* -----------------------
-   JSONP callback
-   IMPORTANT: For "Next Up", Apps Script must return nextTitle & nextStartISO.
------------------------- */
+// ---------- JSONP callback ----------
 window.handleSmoothFeed = function(data){
   hasFetchedOnce = true;
 
+  // No live session
   if(!data || !data.isLive || !data.title){
     liveSession = null;
     showScreensaver();
@@ -184,8 +227,6 @@ window.handleSmoothFeed = function(data){
   liveSession = {
     endISO: data.endISO,
     timeRangeText: formatTimeRange(data.startISO, data.endISO),
-
-    // Next Up data (must be provided by Apps Script)
     nextTitle: data.nextTitle || "",
     nextStartISO: data.nextStartISO || ""
   };
@@ -193,9 +234,7 @@ window.handleSmoothFeed = function(data){
   renderCountdown();
 };
 
-/* -----------------------
-   JSONP loader
------------------------- */
+// ---------- JSONP loader ----------
 function loadFeed(){
   const old = document.getElementById("jsonp");
   if(old) old.remove();
@@ -212,11 +251,12 @@ function loadFeed(){
   document.body.appendChild(s);
 }
 
-/* -----------------------
-   Start
------------------------- */
+// ---------- Start ----------
 hideBothUntilFirstFetch();
 if(dateRow) dateRow.textContent = formatDateLine();
+
+// Start calm until a session is live
+setBackgroundUrgency(null);
 
 loadFeed();
 setInterval(loadFeed, FEED_REFRESH_MS);
