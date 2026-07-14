@@ -218,13 +218,22 @@ body{
   }
 }
 
+/* =========================================
+   CLEAN CLIENT NAME — NO BANDING
+   ========================================= */
+
 .clientName{
-  font-size:clamp(52px,5.5vw,110px);
-  font-weight:950;
-  letter-spacing:0.02em;
-  text-transform:uppercase;
-  color:#fff;
-  animation:whiteGlowPulse 2.6s ease-in-out infinite;
+  font-size: clamp(52px, 5.5vw, 110px);
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.22),
+    0 0 16px rgba(255,255,255,0.12);
+
+  animation: none;
 }
 
 .meta{
