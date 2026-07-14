@@ -79,11 +79,10 @@ body{
   contain: paint;
 }
 
-/* Optimized urgency red wash */
-.bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
+.bg::before,
+.bg::after{
+    display: none;
+}
 
   background:
     radial-gradient(
