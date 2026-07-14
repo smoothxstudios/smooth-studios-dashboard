@@ -4,8 +4,8 @@
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA/exec";
 
-const FEED_REFRESH_MS = 10000; // Apps Script friendly
-const UI_TICK_MS = 100;        // smooth countdown
+const FEED_REFRESH_MS = 60000; // Apps Script friendly
+const UI_TICK_MS = 1000;        // smooth countdown
 
 // Elements
 const screensaverEl = document.getElementById("screensaver");
