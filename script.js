@@ -261,3 +261,9 @@ setBackgroundUrgency(null);
 loadFeed();
 setInterval(loadFeed, FEED_REFRESH_MS);
 setInterval(renderCountdown, UI_TICK_MS);
+
+<script>
+  window.setInterval(() => {
+    window.location.reload();
+  }, 600000);
+</script>
