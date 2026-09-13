@@ -1,0 +1,93 @@
+name: Check Google Apps Script connection
+
+# This workflow only reads the existing project. It never pushes or deploys code.
+on:
+  push:
+    branches:
+      - setup/apps-script-publishing
+    paths:
+      - .github/workflows/check-apps-script-connection.yml
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: smooth-apps-script-connection-check
+  cancel-in-progress: false
+
+jobs:
+  check-connection:
+    if: github.repository == 'smoothxstudios/smooth-studios-dashboard'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      SCRIPT_ID: 1KjblYZTSCqg6yIzZhESKEEiN8BYnW-hO64JdjyMol74ah0YIPm7Q8nKp
+      DEPLOYMENT_ID: AKfycbyCW9D8uiFxeQMb5P4EDpnl-oIzwq7dIId-K91oXMUlC4nDPSvnTMtqFj03ZJ7vlsK6sA
+    steps:
+      - name: Require Google authorization
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        shell: bash
+        run: |
+          if [[ -z "$CLASPRC_JSON" ]]; then
+            echo '::error::Setup pending: add CLASPRC_JSON in this repository Actions secrets, then re-run this job. No Google code has been changed.'
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+
+      - name: Install pinned clasp before making credentials available
+        shell: bash
+        run: |
+          npm install --prefix "$RUNNER_TEMP/smooth-clasp-tools" --no-audit --no-fund @google/clasp@3.4.1
+
+      - name: Store temporary credentials without printing them
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          let credentials;
+          try {
+            credentials = JSON.parse(process.env.CLASPRC_JSON);
+          } catch {
+            console.error('CLASPRC_JSON must contain valid JSON copied from the private clasp authorization file.');
+            process.exit(1);
+          }
+          if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
+            console.error('CLASPRC_JSON must be a JSON object.');
+            process.exit(1);
+          }
+          const target = path.join(process.env.RUNNER_TEMP, 'smooth-clasp-auth.json');
+          fs.writeFileSync(target, JSON.stringify(credentials), { mode: 0o600, flag: 'wx' });
+          NODE
+
+      - name: Verify project and existing web-app deployment without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/smooth-script-check"
+          cd "$RUNNER_TEMP/smooth-script-check"
+          CLASP="$RUNNER_TEMP/smooth-clasp-tools/node_modules/.bin/clasp"
+          AUTH_FILE="$RUNNER_TEMP/smooth-clasp-auth.json"
+          "$CLASP" --auth "$AUTH_FILE" clone-script "$SCRIPT_ID"
+          "$CLASP" --auth "$AUTH_FILE" list-deployments --json > "$RUNNER_TEMP/smooth-deployments.json"
+          if ! grep -Fq -- "$DEPLOYMENT_ID" "$RUNNER_TEMP/smooth-deployments.json"; then
+            echo '::error::The dashboard deployment was not found in this project. Stop setup and verify the project/deployment pairing; nothing was published.'
+            exit 1
+          fi
+          echo 'Verified read access to the configured project and its existing dashboard deployment.'
+          echo '### Apps Script connection verified' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The configured project and existing dashboard deployment are accessible. No code was pushed, no version was created, and no deployment was changed.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary credentials and downloaded project
+        if: always()
+        shell: bash
+        run: |
+          rm -f -- "$RUNNER_TEMP/smooth-clasp-auth.json" "$RUNNER_TEMP/smooth-deployments.json"
+          rm -rf -- "$RUNNER_TEMP/smooth-script-check"
