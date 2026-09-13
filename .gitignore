@@ -1,0 +1,10 @@
+# Private local authorization: never commit these files.
+.clasprc.json
+.clasprc.*.json
+smooth-clasp-auth.json
+.env
+.env.*
+
+# Local tooling and operating-system files.
+node_modules/
+.DS_Store
