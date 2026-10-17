@@ -21,6 +21,7 @@
   attr(document.body, 'data-studio', roomFilter);
   hidden(el.studioA, roomFilter !== 'A');
   hidden(el.studioB, roomFilter !== 'B');
+  hidden(el.previewLabel, !demo);
   const clockFormat = new Intl.DateTimeFormat('en-US', { timeZone: Feed.TIME_ZONE, hour: 'numeric', minute: '2-digit' });
   const dateFormat = new Intl.DateTimeFormat('en-US', { timeZone: Feed.TIME_ZONE, weekday: 'long', month: 'long', day: 'numeric' });
   let feed = null;
@@ -37,6 +38,11 @@
   function hidden(node, value) { if (node && node.hidden !== value) node.hidden = value; }
   function attr(node, key, value) { if (node && node.getAttribute(key) !== value) node.setAttribute(key, value); }
   function isExpired(now) { return !lastSuccess || (!demo && now - lastSuccess > EXPIRE_MS); }
+  function renderGreeting(name = '') {
+    text(el.heroStudio, name ? 'Smooth Studios,' : 'Smooth Studios.');
+    text(el.heroGuest, name ? `${name}.` : '');
+    hidden(el.heroGuest, !name);
+  }
 
   function renderRoom(prefix, panel, events, now, stale) {
     const state = Feed.sessionState(events, now);
@@ -48,7 +54,9 @@
     attr(panel, 'data-urgent', String(urgent));
     attr(panel, 'data-stale', String(stale));
     text(el[`${prefix}Status`], current ? (state.active.length > 1 ? 'Sessions in progress' : urgent ? 'Wrapping up' : 'In session') : upcoming ? 'Up next' : 'No session scheduled');
-    text(el[`${prefix}Name`], current ? state.active.map(event => event.firstName).join(' & ') : upcoming ? next.firstName : 'Make yourself at home.');
+    const guest = current ? state.active.map(event => event.firstName).join(' & ') : upcoming ? next.firstName : '';
+    renderGreeting(guest);
+    text(el[`${prefix}Name`], guest || 'Make yourself at home.');
     text(el[`${prefix}TimerLabel`], current ? 'Time remaining' : upcoming ? 'Starts in' : 'Welcome to Smooth Studios');
     text(el[`${prefix}Timer`], current ? Feed.countdown(current.endMs, now) : upcoming ? Feed.countdown(next.startMs, now) : '—');
     text(el[`${prefix}Session`], current ? Feed.timeRange(current) : upcoming ? `${Feed.upcomingTime(next, now)}${next.endMs ? ` – ${clockFormat.format(next.endMs)}` : ''}` : 'Enjoy your time here.');
@@ -73,6 +81,7 @@
     attr(el.connectionStatus, 'data-state', expired || stale ? 'offline' : 'online');
     attr(document.body, 'data-mode', expired ? 'loading' : feed.legacy ? 'legacy' : 'live');
     if (!feed || expired) {
+      renderGreeting();
       hidden(el.sessionBoard, true);
       hidden(el.idleWelcome, false);
       text(el.heroSubtitle, `Welcome to Studio ${roomFilter}. Make yourself at home.`);
@@ -83,7 +92,7 @@
     hidden(el.idleWelcome, hasEvents);
     hidden(el.sessionBoard, !hasEvents);
     text(el.heroSubtitle, `Your time in Studio ${roomFilter}.`);
-    if (!hasEvents) return;
+    if (!hasEvents) { renderGreeting(); return; }
     renderRoom(roomPrefix, roomPanel, relevantEvents, now, stale);
   }
 
@@ -142,7 +151,6 @@
       lastAttemptFailed = true;
     } else if (!demo) { localStorage.removeItem(CACHE_KEY); }
   } catch (_) { /* A missing cache never blocks startup. */ }
-  text(el.displayVersion, 'Welcome TV · v2.0.1');
   if (demo) {
     const now = Date.now();
     const event = (firstName, studio, start, end) => ({ firstName, studio, startISO: new Date(now + start * 60000).toISOString(), endISO: new Date(now + end * 60000).toISOString() });

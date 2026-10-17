@@ -26,7 +26,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 
 .welcome-display {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: var(--space);
   width: 100%;
   min-height: 100vh;
@@ -47,6 +47,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .brand-line { flex-shrink: 0; display: block; width: 2.15em; height: 2px; background: var(--primary); }
 .welcome-heading h1 { max-width: 100%; font-size: clamp(42px, 4.45vw, 171px); font-weight: 600; line-height: 1.08; letter-spacing: -.055em; }
 .welcome-heading h1 span { white-space: nowrap; }
+.welcome-heading h1 .welcome-guest { white-space: normal; overflow-wrap: anywhere; }
 .welcome-heading > p:last-child { margin-top: .65em; color: var(--muted); font-size: clamp(16px, 1.25vw, 48px); font-weight: 400; line-height: 1.4; }
 
 .session-board { min-height: 0; display: flex; }
@@ -100,18 +101,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .idle-mark span { display: block; width: 15%; height: 60%; background: var(--primary); border-radius: 999px; transform: rotate(24deg); }
 .idle-mark span:nth-child(2) { height: 86%; }
 
-.display-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px var(--space); min-width: 0; padding-top: calc(var(--space) * .2); }
-.studio-tip { display: flex; align-items: center; gap: .8em; flex: 1 1 45%; min-width: 0; color: #c4c4cc; font-size: clamp(13px, 1vw, 38px); line-height: 1.45; }
-.tip-mark { flex-shrink: 0; color: var(--primary); font-size: 1.25em; line-height: 1; }
-#studioTip { transition: opacity 220ms ease, transform 280ms var(--ease-out); }
-#studioTip.is-changing { opacity: 0; transform: translateY(4px); }
-.footer-details { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: .5em 1.2em; color: var(--muted); font-size: clamp(11px, .78vw, 30px); line-height: 1.4; }
-.connection-status { display: inline-flex; align-items: center; gap: .5em; }
-.connection-status::before { content: ""; width: .35em; height: .35em; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-.connection-status[data-state="offline"] { color: var(--amber); }
-.studio-website { color: var(--foreground); text-decoration: none; font-weight: 550; }
-.display-version { color: #74747e; font-size: .85em; }
-.display-version:empty { display: none; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .noscript-message { position: fixed; inset: auto 20px 20px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--foreground); text-align: center; }
 @keyframes welcome-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -126,14 +116,13 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   .session-main { padding-block: calc(var(--space) * .65); }
 }
 @media (max-width: 1099px) {
-  .welcome-display { grid-template-rows: auto auto minmax(250px, 1fr) auto; }
+  .welcome-display { grid-template-rows: auto auto minmax(250px, 1fr); }
   .welcome-heading h1 span { display: block; }
   .room-panel { padding: 22px; }
   .session-main { grid-template-columns: minmax(0, 1fr); gap: 22px; padding: 28px 0; }
   .session-countdown { text-align: left; }
   .timer { font-size: clamp(42px, 6vw, 68px); }
   .detail-row { align-items: flex-start; }
-  .footer-details { justify-content: flex-start; }
 }
 @media (max-width: 640px) {
   .display-header { align-items: flex-start; gap: 16px; }
@@ -153,9 +142,6 @@ h1, h2, h3, p, dl, dd { margin: 0; }
   .detail-row { font-size: 14px; }
   .idle-welcome { flex-direction: column; align-items: flex-start; gap: 18px; padding-block: 26px; }
   .idle-mark { width: 90px; height: 90px; }
-  .display-footer { gap: 18px; padding-top: 12px; }
-  .studio-tip { flex-basis: 100%; }
-  .footer-details { justify-content: flex-start; gap: 8px 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

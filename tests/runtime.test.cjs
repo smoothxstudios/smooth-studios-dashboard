@@ -134,6 +134,11 @@ function assertGuestAbsent(h, ...names) {
   const text = Object.values(h.elements).map(element => element.textContent).join('\n');
   for (const name of names) assert.ok(!text.includes(name), `${name} must never be rendered in this room`);
 }
+function assertGreeting(h, name = '') {
+  assert.equal(h.text('heroStudio'), name ? 'Smooth Studios,' : 'Smooth Studios.');
+  assert.equal(h.text('heroGuest'), name ? `${name}.` : '');
+  assert.equal(h.elements.heroGuest.hidden, !name);
+}
 
 test('the actual HTML entry point boots its dependencies in order and is fully read-only', () => {
   const h = browser({ fromHTML: true });
@@ -148,6 +153,7 @@ test('initial load identifies its room while a single request waits; no prematur
   for (const display of displays) {
     const h = browser({ search: display.search });
     assertRoomIdentity(h, display);
+    assertGreeting(h);
     assert.equal(h.elements.sessionBoard.hidden, true);
     assert.equal(h.elements.idleWelcome.hidden, false);
     assert.equal(h.text('connectionStatus'), 'Connecting to schedule');
@@ -169,6 +175,7 @@ test('concurrent bookings show only the selected room with independent countdown
     assert.equal(h.elements[`studio${display.studio}`].hidden, false);
     assert.equal(h.elements.roomGrid.getAttribute('data-layout'), 'single');
     if (display.studio === 'A') {
+      assertGreeting(h, 'Alex');
       assert.equal(h.text('aName'), 'Alex');
       assert.equal(h.text('aTimer'), '7:00');
       assert.equal(h.elements.studioA.getAttribute('data-urgent'), 'true');
@@ -176,6 +183,7 @@ test('concurrent bookings show only the selected room with independent countdown
       assert.match(h.text('aNext'), /Taylor/);
       assertGuestAbsent(h, 'Jordan', 'UnassignedGuest');
     } else {
+      assertGreeting(h, 'Jordan');
       assert.equal(h.text('bName'), 'Jordan');
       assert.equal(h.text('bTimer'), '1:30:00');
       assert.equal(h.elements.studioB.getAttribute('data-urgent'), 'false');
@@ -187,13 +195,21 @@ test('concurrent bookings show only the selected room with independent countdown
 
 test('a cached future session becomes active at its boundary without waiting for the next poll', () => {
   const h = browser();
-  h.respond(schedule([event('A', 'Alex', -30, 1 / 60), event('A', 'Taylor', 1 / 60, 60), event('B', 'Jordan', -10, 90)]));
+  h.respond(schedule([event('A', 'Alex', -30, 1 / 60), event('A', 'Taylor', 1 / 60, 2 / 60), event('B', 'Jordan', -10, 90)]));
   assert.equal(h.text('aName'), 'Alex');
-  h.advance(1020);
+  assertGreeting(h, 'Alex');
+  h.advance(999);
+  assertGreeting(h, 'Alex');
+  h.advance(21);
   assert.equal(h.text('aName'), 'Taylor');
+  assertGreeting(h, 'Taylor');
   assert.equal(h.text('aTimerLabel'), 'Time remaining');
   assertGuestAbsent(h, 'Jordan');
   assert.equal(h.requests(), 1);
+  h.advance(1000);
+  assert.equal(h.elements.sessionBoard.hidden, true);
+  assert.equal(h.elements.idleWelcome.hidden, false);
+  assertGreeting(h);
 });
 
 test('JSONP timeout backs off, recovers, and removes callbacks and script nodes', () => {
@@ -233,6 +249,7 @@ test('recent cached sessions survive a restart but disappear once the five-minut
       event(null, 'UnknownGuest', -30, 60)], NOW - 299000) });
     assertRoomIdentity(h, display);
     assert.equal(h.text(`${display.prefix}Name`), 'SelectedGuest');
+    assertGreeting(h, 'SelectedGuest');
     assertGuestAbsent(h, 'OtherGuest', 'UnknownGuest');
     assert.equal(h.elements.sessionBoard.hidden, false);
     assert.match(h.text('connectionStatus'), /Reconnecting/);
@@ -240,10 +257,12 @@ test('recent cached sessions survive a restart but disappear once the five-minut
     assertRoomIdentity(h, display);
     assert.equal(h.elements.sessionBoard.hidden, true);
     assert.equal(h.elements.idleWelcome.hidden, false);
+    assertGreeting(h);
     const expired = browser({ search: display.search,
       saved: cached([event(display.studio, 'OldGuest', -30, 60)], NOW - 300001) });
     assertRoomIdentity(expired, display);
     assert.equal(expired.elements.sessionBoard.hidden, true);
+    assertGreeting(expired);
     assertGuestAbsent(expired, 'OldGuest');
   }
 });
@@ -256,11 +275,13 @@ test('legacy cached next bookings retain their countdown only when assigned to t
     assert.equal(h.elements.sessionBoard.hidden, false);
     assert.equal(h.text(`${display.prefix}Name`), 'Taylor');
     assert.equal(h.text(`${display.prefix}TimerLabel`), 'Starts in');
+    assertGreeting(h, 'Taylor');
     for (const studio of [display.opposite, null]) {
       const excluded = browser({ search: display.search, saved: cached([next(studio)], NOW - 1000, true) });
       assertRoomIdentity(excluded, display);
       assert.equal(excluded.elements.sessionBoard.hidden, true);
       assert.equal(excluded.elements.idleWelcome.hidden, false);
+      assertGreeting(excluded);
       assertGuestAbsent(excluded, 'Taylor');
     }
   }
@@ -314,6 +335,7 @@ test('idle and legacy feeds never substitute an opposite or unassigned booking f
       assertRoomIdentity(h, display);
       assert.equal(h.elements.sessionBoard.hidden, true);
       assert.equal(h.elements.idleWelcome.hidden, false);
+      assertGreeting(h);
       assertGuestAbsent(h, 'OtherGuest', 'UnknownGuest');
     }
     const selected = browser({ search: display.search });
@@ -322,5 +344,6 @@ test('idle and legacy feeds never substitute an opposite or unassigned booking f
     assertRoomIdentity(selected, display);
     assert.equal(selected.elements.sessionBoard.hidden, false);
     assert.equal(selected.text(`${display.prefix}Name`), 'SelectedGuest');
+    assertGreeting(selected, 'SelectedGuest');
   }
 });
