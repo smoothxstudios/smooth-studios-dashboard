@@ -37,6 +37,10 @@
   function hidden(node, value) { if (node && node.hidden !== value) node.hidden = value; }
   function attr(node, key, value) { if (node && node.getAttribute(key) !== value) node.setAttribute(key, value); }
   function isExpired(now) { return !lastSuccess || (!demo && now - lastSuccess > EXPIRE_MS); }
+  function countdownText(end, now) {
+    const value = Feed.countdown(end, now);
+    return `${value} ${value.split(':').length === 3 ? 'hrs' : 'min'}`;
+  }
   function renderGreeting(name = '') {
     text(el.heroStudio, name ? 'Smooth Studios' : 'Smooth Studios.');
     text(el.heroGuest, name);
@@ -52,7 +56,7 @@
     const progress = el[`${prefix}Progress`];
     const remaining = current ? Math.max(0, Math.min(100, (current.endMs - now) / (current.endMs - current.startMs) * 100)) : 0;
     attr(progress, 'value', remaining.toFixed(2));
-    attr(progress, 'aria-valuetext', current ? `${Feed.countdown(current.endMs, now)} remaining` : '');
+    attr(progress, 'aria-valuetext', current ? `${countdownText(current.endMs, now)} remaining` : '');
     hidden(progress, !current);
   }
 
@@ -69,7 +73,7 @@
     const guest = current ? state.active.map(event => event.firstName).join(' & ') : upcoming ? next.firstName : '';
     renderGreeting(guest);
     text(el[`${prefix}TimerLabel`], current ? 'Time remaining' : upcoming ? 'Starts in' : 'Welcome to Smooth Studios');
-    text(el[`${prefix}Timer`], current ? Feed.countdown(current.endMs, now) : upcoming ? Feed.countdown(next.startMs, now) : '—');
+    text(el[`${prefix}Timer`], current ? countdownText(current.endMs, now) : upcoming ? countdownText(next.startMs, now) : '—');
     renderProgress(prefix, current, now);
     text(el[`${prefix}Session`], current ? Feed.timeRange(current) : upcoming ? `${Feed.upcomingTime(next, now)}${next.endMs ? ` – ${clockFormat.format(next.endMs)}` : ''}` : 'Enjoy your time here.');
     const showNext = Boolean(current && next && urgent);

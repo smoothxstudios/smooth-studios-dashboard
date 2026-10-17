@@ -193,14 +193,14 @@ test('concurrent bookings show only the selected room with independent countdown
     assert.equal(h.elements.roomGrid.getAttribute('data-layout'), 'single');
     if (display.studio === 'A') {
       assertGreeting(h, 'Alex');
-      assert.equal(h.text('aTimer'), '7:00');
+      assert.equal(h.text('aTimer'), '7:00 min');
       assertProgress(h, 'a', 18.92);
       assert.equal(h.elements.studioA.getAttribute('data-urgent'), 'true');
       assertNext(h, 'a', 'Taylor');
       assertGuestAbsent(h, 'Jordan', 'Morgan', 'UnassignedGuest');
     } else {
       assertGreeting(h, 'Jordan');
-      assert.equal(h.text('bTimer'), '1:30:00');
+      assert.equal(h.text('bTimer'), '1:30:00 hrs');
       assertProgress(h, 'b', 90);
       assert.equal(h.elements.studioB.getAttribute('data-urgent'), 'false');
       assertNext(h, 'b');
@@ -214,12 +214,12 @@ test('remaining-time progress starts full, drains through halfway, and clears wh
   h.respond(schedule([event('A', 'Alex', 0, 1)]));
   assert.equal(Number(h.elements.aProgress.getAttribute('max')), 100);
   assertProgress(h, 'a', 100);
-  assert.equal(h.elements.aProgress.getAttribute('aria-valuetext'), '1:00 remaining');
+  assert.equal(h.elements.aProgress.getAttribute('aria-valuetext'), '1:00 min remaining');
   h.advance(30020);
   const halfway = Number(h.elements.aProgress.getAttribute('value'));
   assert.ok(Math.abs(halfway - 50) < 0.1, 'Half the booking duration leaves half the bar');
   assertProgress(h, 'a', halfway);
-  assert.equal(h.elements.aProgress.getAttribute('aria-valuetext'), '0:30 remaining');
+  assert.equal(h.elements.aProgress.getAttribute('aria-valuetext'), '0:30 min remaining');
   h.advance(30000);
   assertProgress(h, 'a');
   assertGreeting(h);

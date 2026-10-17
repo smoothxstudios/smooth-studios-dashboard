@@ -55,6 +55,10 @@ Preview sample states using `?demo=dual`, `?demo=urgent`, `?demo=idle`, or `?dem
 
 ## Releases
 
+### 2.2.3 — October 17, 2026
+
+Added “hrs” after hour-based countdowns and “min” when less than an hour remains, for both upcoming and active sessions.
+
 ### 2.2.2 — October 17, 2026
 
 Increased the progress bar thickness and enlarged the welcome, clock, countdown, session range, labels, and status text for TV viewing. Loosened the guest-name letter spacing, widened the session area, and raised secondary-text contrast while preserving the simple layout and remaining-time calculation.
