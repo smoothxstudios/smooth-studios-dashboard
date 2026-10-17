@@ -125,8 +125,8 @@ function cached(events, savedAt = NOW - 1000, legacy = false) {
 const displays = [{ studio: 'A', search: '', prefix: 'a', opposite: 'B' },
   { studio: 'B', search: '?studio=b', prefix: 'b', opposite: 'A' }];
 function assertRoomIdentity(h, display) {
-  assert.equal(h.text('studioLabel')?.toUpperCase(), `STUDIO ${display.studio}`);
   assert.match(h.document.title, new RegExp(`Studio ${display.studio}\\b`));
+  assert.equal(h.document.body.getAttribute('data-studio'), display.studio);
   assert.equal(h.elements[`studio${display.opposite}`].hidden, true);
   assert.equal(h.elements.studioUnassigned, undefined, 'The display has no unassigned-room panel');
 }
@@ -138,6 +138,15 @@ function assertGreeting(h, name = '') {
   assert.equal(h.text('heroStudio'), name ? 'Smooth Studios,' : 'Smooth Studios.');
   assert.equal(h.text('heroGuest'), name ? `${name}.` : '');
   assert.equal(h.elements.heroGuest.hidden, !name);
+}
+function assertNext(h, prefix, name = '') {
+  assert.equal(h.elements[`${prefix}NextRow`].hidden, !name);
+  if (name) {
+    assert.equal(h.text(`${prefix}NextLabel`), 'Up next');
+    assert.ok(h.text(`${prefix}Next`).includes(name));
+  } else {
+    assert.equal(h.text(`${prefix}Next`), '', 'An irrelevant next row must not retain a guest or courtesy message');
+  }
 }
 
 test('the actual HTML entry point boots its dependencies in order and is fully read-only', () => {
@@ -154,6 +163,7 @@ test('initial load identifies its room while a single request waits; no prematur
     const h = browser({ search: display.search });
     assertRoomIdentity(h, display);
     assertGreeting(h);
+    assertNext(h, display.prefix);
     assert.equal(h.elements.sessionBoard.hidden, true);
     assert.equal(h.elements.idleWelcome.hidden, false);
     assert.equal(h.text('connectionStatus'), 'Connecting to schedule');
@@ -166,7 +176,7 @@ test('initial load identifies its room while a single request waits; no prematur
 
 test('concurrent bookings show only the selected room with independent countdowns and row labels', () => {
   const feed = schedule([event('A', 'Alex', -30, 7), event('B', 'Jordan', -10, 90),
-    event('A', 'Taylor', 10, 60), event(null, 'UnassignedGuest', -10, 90)]);
+    event('A', 'Taylor', 10, 60), event('B', 'Morgan', 100, 160), event(null, 'UnassignedGuest', -10, 90)]);
   for (const display of displays) {
     const h = browser({ search: display.search });
     h.respond(feed);
@@ -176,33 +186,42 @@ test('concurrent bookings show only the selected room with independent countdown
     assert.equal(h.elements.roomGrid.getAttribute('data-layout'), 'single');
     if (display.studio === 'A') {
       assertGreeting(h, 'Alex');
-      assert.equal(h.text('aName'), 'Alex');
       assert.equal(h.text('aTimer'), '7:00');
       assert.equal(h.elements.studioA.getAttribute('data-urgent'), 'true');
-      assert.equal(h.text('aNextLabel'), 'Up next');
-      assert.match(h.text('aNext'), /Taylor/);
-      assertGuestAbsent(h, 'Jordan', 'UnassignedGuest');
+      assertNext(h, 'a', 'Taylor');
+      assertGuestAbsent(h, 'Jordan', 'Morgan', 'UnassignedGuest');
     } else {
       assertGreeting(h, 'Jordan');
-      assert.equal(h.text('bName'), 'Jordan');
       assert.equal(h.text('bTimer'), '1:30:00');
       assert.equal(h.elements.studioB.getAttribute('data-urgent'), 'false');
-      assert.notEqual(h.text('bNextLabel'), 'Up next', 'Courtesy text must not be presented as the next booking');
-      assertGuestAbsent(h, 'Alex', 'Taylor', 'UnassignedGuest');
+      assertNext(h, 'b');
+      assertGuestAbsent(h, 'Alex', 'Taylor', 'Morgan', 'UnassignedGuest');
     }
   }
+});
+
+test('an actual next booking appears only when the selected session reaches its final ten minutes', () => {
+  const h = browser();
+  h.respond(schedule([event('A', 'Alex', -30, 10 + 1 / 60), event('A', 'Taylor', 11, 60)]));
+  assertGreeting(h, 'Alex');
+  assertNext(h, 'a');
+  assertGuestAbsent(h, 'Taylor');
+  h.advance(1020);
+  assertGreeting(h, 'Alex');
+  assertNext(h, 'a', 'Taylor');
+  assert.equal(h.requests(), 1);
 });
 
 test('a cached future session becomes active at its boundary without waiting for the next poll', () => {
   const h = browser();
   h.respond(schedule([event('A', 'Alex', -30, 1 / 60), event('A', 'Taylor', 1 / 60, 2 / 60), event('B', 'Jordan', -10, 90)]));
-  assert.equal(h.text('aName'), 'Alex');
   assertGreeting(h, 'Alex');
+  assertNext(h, 'a', 'Taylor');
   h.advance(999);
   assertGreeting(h, 'Alex');
   h.advance(21);
-  assert.equal(h.text('aName'), 'Taylor');
   assertGreeting(h, 'Taylor');
+  assertNext(h, 'a');
   assert.equal(h.text('aTimerLabel'), 'Time remaining');
   assertGuestAbsent(h, 'Jordan');
   assert.equal(h.requests(), 1);
@@ -210,6 +229,7 @@ test('a cached future session becomes active at its boundary without waiting for
   assert.equal(h.elements.sessionBoard.hidden, true);
   assert.equal(h.elements.idleWelcome.hidden, false);
   assertGreeting(h);
+  assertNext(h, 'a');
 });
 
 test('JSONP timeout backs off, recovers, and removes callbacks and script nodes', () => {
@@ -236,7 +256,7 @@ test('invalid responses retain the previous schedule and mark it as reconnecting
   const saved = h.storage.get(CACHE_KEY);
   h.advance(10000);
   h.respond(schedule([event('B', 'Malformed', 20, 10)]));
-  assert.equal(h.text('aName'), 'Alex');
+  assertGreeting(h, 'Alex');
   assert.equal(h.elements.sessionBoard.hidden, false);
   assert.equal(h.storage.get(CACHE_KEY), saved);
   assert.match(h.text('connectionStatus'), /Reconnecting/);
@@ -245,11 +265,12 @@ test('invalid responses retain the previous schedule and mark it as reconnecting
 test('recent cached sessions survive a restart but disappear once the five-minute grace expires', () => {
   for (const display of displays) {
     const h = browser({ search: display.search, saved: cached([
-      event(display.studio, 'SelectedGuest', -30, 60), event(display.opposite, 'OtherGuest', -30, 60),
+      event(display.studio, 'SelectedGuest', -30, 7), event(display.studio, 'NextGuest', 10, 60),
+      event(display.opposite, 'OtherGuest', -30, 60),
       event(null, 'UnknownGuest', -30, 60)], NOW - 299000) });
     assertRoomIdentity(h, display);
-    assert.equal(h.text(`${display.prefix}Name`), 'SelectedGuest');
     assertGreeting(h, 'SelectedGuest');
+    assertNext(h, display.prefix, 'NextGuest');
     assertGuestAbsent(h, 'OtherGuest', 'UnknownGuest');
     assert.equal(h.elements.sessionBoard.hidden, false);
     assert.match(h.text('connectionStatus'), /Reconnecting/);
@@ -258,11 +279,13 @@ test('recent cached sessions survive a restart but disappear once the five-minut
     assert.equal(h.elements.sessionBoard.hidden, true);
     assert.equal(h.elements.idleWelcome.hidden, false);
     assertGreeting(h);
+    assertNext(h, display.prefix);
     const expired = browser({ search: display.search,
       saved: cached([event(display.studio, 'OldGuest', -30, 60)], NOW - 300001) });
     assertRoomIdentity(expired, display);
     assert.equal(expired.elements.sessionBoard.hidden, true);
     assertGreeting(expired);
+    assertNext(expired, display.prefix);
     assertGuestAbsent(expired, 'OldGuest');
   }
 });
@@ -273,9 +296,9 @@ test('legacy cached next bookings retain their countdown only when assigned to t
     const h = browser({ search: display.search, saved: cached([next(display.studio)], NOW - 1000, true) });
     assertRoomIdentity(h, display);
     assert.equal(h.elements.sessionBoard.hidden, false);
-    assert.equal(h.text(`${display.prefix}Name`), 'Taylor');
     assert.equal(h.text(`${display.prefix}TimerLabel`), 'Starts in');
     assertGreeting(h, 'Taylor');
+    assertNext(h, display.prefix);
     for (const studio of [display.opposite, null]) {
       const excluded = browser({ search: display.search, saved: cached([next(studio)], NOW - 1000, true) });
       assertRoomIdentity(excluded, display);
@@ -290,7 +313,7 @@ test('legacy cached next bookings retain their countdown only when assigned to t
 test('preview mode makes no network requests or changes to the live cache', () => {
   for (const saved of [cached([event('A', 'RealGuest', -30, 60)]), 'malformed live cache', cached([], NOW - 600000)]) {
     const h = browser({ search: '?demo=dual', saved });
-    assert.equal(h.text('aName'), 'Alex');
+    assertGreeting(h, 'Alex');
     assertRoomIdentity(h, displays[0]);
     assertGuestAbsent(h, 'Jordan');
     assert.equal(h.requests(), 0);
@@ -320,7 +343,7 @@ test('hidden displays cancel pending work and resume immediately without duplica
   h.online(true);
   assert.equal(h.requests(), 3);
   h.respond(schedule([event('A', 'Updated', -30, 60)]));
-  assert.equal(h.text('aName'), 'Updated');
+  assertGreeting(h, 'Updated');
   assert.equal(h.text('connectionStatus'), 'Schedule synced');
 });
 
@@ -336,6 +359,7 @@ test('idle and legacy feeds never substitute an opposite or unassigned booking f
       assert.equal(h.elements.sessionBoard.hidden, true);
       assert.equal(h.elements.idleWelcome.hidden, false);
       assertGreeting(h);
+      assertNext(h, display.prefix);
       assertGuestAbsent(h, 'OtherGuest', 'UnknownGuest');
     }
     const selected = browser({ search: display.search });
@@ -343,7 +367,6 @@ test('idle and legacy feeds never substitute an opposite or unassigned booking f
       ...event(undefined, undefined, -30, 60) });
     assertRoomIdentity(selected, display);
     assert.equal(selected.elements.sessionBoard.hidden, false);
-    assert.equal(selected.text(`${display.prefix}Name`), 'SelectedGuest');
     assertGreeting(selected, 'SelectedGuest');
   }
 });

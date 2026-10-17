@@ -6,18 +6,18 @@ The existing GitHub Pages and linked Netlify deployments remain in place.
 ## Display
 
 - A dedicated, read-only TV display for each room. The original URL defaults to Studio A; `?studio=B` shows Studio B only.
-- A personal welcome using the displayed guest’s first name, Eastern-time session ranges, and countdowns that retain hours.
+- An oversized personal welcome using the displayed guest’s first name, with Eastern-time session ranges and countdowns in a compact bottom rail.
 - A restrained red warning during the final ten minutes; next guest appears in that room’s final-ten-minute row.
 - Only the selected room’s bookings appear. Unmapped rentals are excluded; never guess a room.
 - A welcome screen when no sessions remain, and a subtle amber session status during brief outages.
-- No clickable links, controls, or room-switching UI. The room is identified during sessions, loading, and idle states.
+- No clickable links, controls, or room-switching UI. The room is selected by its URL and identified in the browser title; room headings and duplicate guest labels are removed from the display.
 
 | TV | Raspberry Pi launch URL |
 | --- | --- |
 | Studio A | https://smoothxstudios.github.io/smooth-studios-dashboard/ |
 | Studio B | https://smoothxstudios.github.io/smooth-studios-dashboard/?studio=B |
 
-The design uses the Studio Dashboard’s charcoal/red palette, flat panels, divider rows, and reduced-motion support. It uses local logo assets and system fonts, with no frontend packages, build step, background video, animation loop, or recurring full-page reload.
+The design turns the Studio Dashboard’s charcoal/red palette into a photographic welcome backdrop: oversized typography, static crimson arcs, restrained framing, and the studio slogan. The guest’s name appears once as the focal point. It uses local logo assets and system fonts, with no frontend packages, build step, background video, animation loop, or recurring full-page reload.
 
 ## Calendar feed
 
@@ -53,6 +53,10 @@ Run `node --test tests/*.test.cjs`. Tests cover simultaneous rooms, exact sessio
 Preview sample states using `?demo=dual`, `?demo=urgent`, `?demo=idle`, or `?demo=offline`. Preview mode is labeled, never calls the calendar, and does not modify the live cache. These are simulated guests, not bookings. Remove the query string for normal operation.
 
 ## Releases
+
+### 2.1.0 — October 17, 2026
+
+Recomposed the TV as a branded welcome backdrop with a prominent personal greeting, static red graphic depth, and a compact session rail. Removed the room-card heading, Guest block, eyebrow, and redundant courtesy row. The next-booking row appears only during the current session’s final ten minutes when a next booking exists. The separate A/B URLs and automatic schedule updates are preserved.
 
 ### 2.0.2 — October 17, 2026
 

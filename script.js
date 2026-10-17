@@ -17,7 +17,6 @@
   const roomPrefix = roomFilter.toLowerCase();
   const roomPanel = el[`studio${roomFilter}`];
   document.title = `Studio ${roomFilter} | Smooth Studios`;
-  text(el.studioLabel, `STUDIO ${roomFilter}`);
   attr(document.body, 'data-studio', roomFilter);
   hidden(el.studioA, roomFilter !== 'A');
   hidden(el.studioB, roomFilter !== 'B');
@@ -42,6 +41,12 @@
     text(el.heroStudio, name ? 'Smooth Studios,' : 'Smooth Studios.');
     text(el.heroGuest, name ? `${name}.` : '');
     hidden(el.heroGuest, !name);
+    attr(el.heroTitle, 'data-personalized', String(Boolean(name)));
+    attr(el.heroGuest, 'data-length', name.length > 22 ? 'long' : name.length > 12 ? 'medium' : 'short');
+  }
+  function renderNext(prefix, next = null, now = Date.now()) {
+    hidden(el[`${prefix}NextRow`], !next);
+    text(el[`${prefix}Next`], next ? `${next.firstName} · ${Feed.upcomingTime(next, now)}` : '');
   }
 
   function renderRoom(prefix, panel, events, now, stale) {
@@ -56,13 +61,11 @@
     text(el[`${prefix}Status`], current ? (state.active.length > 1 ? 'Sessions in progress' : urgent ? 'Wrapping up' : 'In session') : upcoming ? 'Up next' : 'No session scheduled');
     const guest = current ? state.active.map(event => event.firstName).join(' & ') : upcoming ? next.firstName : '';
     renderGreeting(guest);
-    text(el[`${prefix}Name`], guest || 'Make yourself at home.');
     text(el[`${prefix}TimerLabel`], current ? 'Time remaining' : upcoming ? 'Starts in' : 'Welcome to Smooth Studios');
     text(el[`${prefix}Timer`], current ? Feed.countdown(current.endMs, now) : upcoming ? Feed.countdown(next.startMs, now) : '—');
     text(el[`${prefix}Session`], current ? Feed.timeRange(current) : upcoming ? `${Feed.upcomingTime(next, now)}${next.endMs ? ` – ${clockFormat.format(next.endMs)}` : ''}` : 'Enjoy your time here.');
-    const showNext = current && next && urgent;
-    text(el[`${prefix}NextLabel`], showNext ? 'Up next' : 'Welcome');
-    text(el[`${prefix}Next`], showNext ? `${next.firstName} · ${Feed.upcomingTime(next, now)}` : current ? 'Thank you for creating with us.' : upcoming ? 'We’ll see you soon.' : 'Ask our team if you need anything.');
+    const showNext = Boolean(current && next && urgent);
+    renderNext(prefix, showNext ? next : null, now);
   }
 
   function render(now = Date.now()) {
@@ -82,17 +85,16 @@
     attr(document.body, 'data-mode', expired ? 'loading' : feed.legacy ? 'legacy' : 'live');
     if (!feed || expired) {
       renderGreeting();
+      renderNext(roomPrefix);
       hidden(el.sessionBoard, true);
       hidden(el.idleWelcome, false);
-      text(el.heroSubtitle, `Welcome to Studio ${roomFilter}. Make yourself at home.`);
       return;
     }
     const relevantEvents = feed.events.filter(event => event.studio === roomFilter && (event.endMs ? event.endMs > now : event.startMs > now));
     const hasEvents = relevantEvents.length > 0;
     hidden(el.idleWelcome, hasEvents);
     hidden(el.sessionBoard, !hasEvents);
-    text(el.heroSubtitle, `Your time in Studio ${roomFilter}.`);
-    if (!hasEvents) { renderGreeting(); return; }
+    if (!hasEvents) { renderGreeting(); renderNext(roomPrefix); return; }
     renderRoom(roomPrefix, roomPanel, relevantEvents, now, stale);
   }
 
