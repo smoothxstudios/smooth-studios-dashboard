@@ -38,8 +38,8 @@
   function attr(node, key, value) { if (node && node.getAttribute(key) !== value) node.setAttribute(key, value); }
   function isExpired(now) { return !lastSuccess || (!demo && now - lastSuccess > EXPIRE_MS); }
   function renderGreeting(name = '') {
-    text(el.heroStudio, name ? 'Smooth Studios,' : 'Smooth Studios.');
-    text(el.heroGuest, name ? `${name}.` : '');
+    text(el.heroStudio, name ? 'Smooth Studios' : 'Smooth Studios.');
+    text(el.heroGuest, name);
     hidden(el.heroGuest, !name);
     attr(el.heroTitle, 'data-personalized', String(Boolean(name)));
     attr(el.heroGuest, 'data-length', name.length > 22 ? 'long' : name.length > 12 ? 'medium' : 'short');

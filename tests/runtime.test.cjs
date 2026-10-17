@@ -135,8 +135,8 @@ function assertGuestAbsent(h, ...names) {
   for (const name of names) assert.ok(!text.includes(name), `${name} must never be rendered in this room`);
 }
 function assertGreeting(h, name = '') {
-  assert.equal(h.text('heroStudio'), name ? 'Smooth Studios,' : 'Smooth Studios.');
-  assert.equal(h.text('heroGuest'), name ? `${name}.` : '');
+  assert.equal(h.text('heroStudio'), name ? 'Smooth Studios' : 'Smooth Studios.');
+  assert.equal(h.text('heroGuest'), name);
   assert.equal(h.elements.heroGuest.hidden, !name);
 }
 function assertNext(h, prefix, name = '') {

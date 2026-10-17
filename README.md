@@ -55,6 +55,10 @@ Preview sample states using `?demo=dual`, `?demo=urgent`, `?demo=idle`, or `?dem
 
 ## Releases
 
+### 2.2.1 — October 17, 2026
+
+Removed the comma after Smooth Studios and the period after the guest’s name in the personal welcome.
+
 ### 2.2.0 — October 17, 2026
 
 Set displayed guest names in all caps. Moved session details directly beneath the personal welcome, with remaining time and the session range floating above a thin progress bar. The fill follows the active session’s remaining time, resets at booking transitions, and stays hidden for upcoming bookings or expired schedule data. The existing one-second clock updates drive the bar without adding timers.
