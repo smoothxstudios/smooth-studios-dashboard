@@ -17,7 +17,7 @@ The existing GitHub Pages and linked Netlify deployments remain in place.
 | Studio A | https://smoothxstudios.github.io/smooth-studios-dashboard/ |
 | Studio B | https://smoothxstudios.github.io/smooth-studios-dashboard/?studio=B |
 
-The design turns the Studio Dashboard’s charcoal/red palette into a photographic welcome backdrop: oversized typography, static crimson arcs, restrained framing, and the studio slogan. The guest’s name appears once as the focal point. It uses local logo assets and system fonts, with no frontend packages, build step, background video, animation loop, or recurring full-page reload.
+The design uses a clean charcoal backdrop with centered, oversized typography and restrained red brand accents. Decorative background artwork and the slogan are omitted. The guest’s name appears once as the focal point. It uses local logo assets and system fonts, with no frontend packages, build step, background video, animation loop, or recurring full-page reload.
 
 ## Calendar feed
 
@@ -53,6 +53,10 @@ Run `node --test tests/*.test.cjs`. Tests cover simultaneous rooms, exact sessio
 Preview sample states using `?demo=dual`, `?demo=urgent`, `?demo=idle`, or `?demo=offline`. Preview mode is labeled, never calls the calendar, and does not modify the live cache. These are simulated guests, not bookings. Remove the query string for normal operation.
 
 ## Releases
+
+### 2.1.1 — October 17, 2026
+
+Removed the red ring background and studio slogan. Centered the personal welcome across the full display while retaining the logo, clock, and compact session details.
 
 ### 2.1.0 — October 17, 2026
 
