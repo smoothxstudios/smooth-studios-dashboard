@@ -6,7 +6,8 @@ The existing GitHub Pages and linked Netlify deployments remain in place.
 ## Display
 
 - A dedicated, read-only TV display for each room. The original URL defaults to Studio A; `?studio=B` shows Studio B only.
-- An oversized personal welcome using the displayed guest’s first name, with Eastern-time session ranges and countdowns in a compact bottom rail.
+- An oversized personal welcome using the displayed guest’s first name in all caps, with the session range and countdown floating above a slim bar directly under the name.
+- The bar shows the proportion of session time remaining and shrinks as the countdown runs. Before a booking starts, a neutral track accompanies the “Starts in” timer.
 - A restrained red warning during the final ten minutes; next guest appears in that room’s final-ten-minute row.
 - Only the selected room’s bookings appear. Unmapped rentals are excluded; never guess a room.
 - A welcome screen when no sessions remain, and a subtle amber session status during brief outages.
@@ -53,6 +54,10 @@ Run `node --test tests/*.test.cjs`. Tests cover simultaneous rooms, exact sessio
 Preview sample states using `?demo=dual`, `?demo=urgent`, `?demo=idle`, or `?demo=offline`. Preview mode is labeled, never calls the calendar, and does not modify the live cache. These are simulated guests, not bookings. Remove the query string for normal operation.
 
 ## Releases
+
+### 2.2.0 — October 17, 2026
+
+Set displayed guest names in all caps. Moved session details directly beneath the personal welcome, with remaining time and the session range floating above a thin progress bar. The fill follows the active session’s remaining time, resets at booking transitions, and stays hidden for upcoming bookings or expired schedule data. The existing one-second clock updates drive the bar without adding timers.
 
 ### 2.1.1 — October 17, 2026
 

@@ -7,9 +7,9 @@
   <meta name="description" content="A personal welcome to Smooth Studios." />
   <title>Studio A | Smooth Studios</title>
   <link rel="icon" href="logo.png" type="image/png" />
-  <link rel="stylesheet" href="style.css?v=2.1.1" />
-  <script src="feed-model.js?v=2.1.1" defer></script>
-  <script src="script.js?v=2.1.1" defer></script>
+  <link rel="stylesheet" href="style.css?v=2.2.0" />
+  <script src="feed-model.js?v=2.2.0" defer></script>
+  <script src="script.js?v=2.2.0" defer></script>
 </head>
 <body>
   <main class="welcome-display" id="welcomeDisplay">
@@ -30,29 +30,31 @@
         <span id="heroStudio">Smooth Studios</span>
         <span class="hero-guest" id="heroGuest" data-length="short" hidden></span>
       </h1>
-    </section>
 
-    <section class="session-board" id="sessionBoard" aria-label="Your studio session" hidden>
-      <div class="room-grid" id="roomGrid" data-layout="single">
-        <article class="session-rail" id="studioA" data-state="loading" data-urgent="false" aria-label="Studio A session">
-          <div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="aStatus">Loading schedule</span></div>
-          <div class="session-countdown"><p class="detail-label" id="aTimerLabel">Session time</p><p class="timer" id="aTimer">—</p></div>
-          <dl class="session-details"><div><dt>Session</dt><dd id="aSession">—</dd></div></dl>
-          <dl class="next-session" id="aNextRow" hidden><div><dt id="aNextLabel">Up next</dt><dd id="aNext"></dd></div></dl>
-        </article>
-        <article class="session-rail" id="studioB" data-state="loading" data-urgent="false" aria-label="Studio B session" hidden>
-          <div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="bStatus">Loading schedule</span></div>
-          <div class="session-countdown"><p class="detail-label" id="bTimerLabel">Session time</p><p class="timer" id="bTimer">—</p></div>
-          <dl class="session-details"><div><dt>Session</dt><dd id="bSession">—</dd></div></dl>
-          <dl class="next-session" id="bNextRow" hidden><div><dt id="bNextLabel">Up next</dt><dd id="bNext"></dd></div></dl>
-        </article>
+      <section class="session-board" id="sessionBoard" aria-label="Your studio session" hidden>
+        <div class="room-grid" id="roomGrid" data-layout="single">
+          <article class="session-rail" id="studioA" data-state="loading" data-urgent="false" aria-label="Studio A session">
+            <div class="session-countdown"><p class="detail-label" id="aTimerLabel">Session time</p><p class="timer" id="aTimer">—</p></div>
+            <dl class="session-details"><div><dt>Session</dt><dd id="aSession">—</dd></div></dl>
+            <div class="session-track"><progress id="aProgress" class="session-progress" max="100" value="100" aria-label="Session time remaining" hidden></progress></div>
+            <div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="aStatus">Loading schedule</span></div>
+            <dl class="next-session" id="aNextRow" hidden><div><dt id="aNextLabel">Up next</dt><dd id="aNext"></dd></div></dl>
+          </article>
+          <article class="session-rail" id="studioB" data-state="loading" data-urgent="false" aria-label="Studio B session" hidden>
+            <div class="session-countdown"><p class="detail-label" id="bTimerLabel">Session time</p><p class="timer" id="bTimer">—</p></div>
+            <dl class="session-details"><div><dt>Session</dt><dd id="bSession">—</dd></div></dl>
+            <div class="session-track"><progress id="bProgress" class="session-progress" max="100" value="100" aria-label="Session time remaining" hidden></progress></div>
+            <div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="bStatus">Loading schedule</span></div>
+            <dl class="next-session" id="bNextRow" hidden><div><dt id="bNextLabel">Up next</dt><dd id="bNext"></dd></div></dl>
+          </article>
+        </div>
+      </section>
+
+      <div class="idle-welcome" id="idleWelcome" aria-hidden="true">
+        <svg class="signature-mark" viewBox="0 0 116 42" xmlns="http://www.w3.org/2000/svg"><path d="M 4 37 L 25 5 M 37 37 L 58 5 M 70 37 L 91 5" fill="none" stroke="currentColor" stroke-width="6" /><path d="M 98 21 H 116" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+        <span class="signature-line"></span>
       </div>
     </section>
-
-    <div class="idle-welcome" id="idleWelcome" aria-hidden="true">
-      <svg class="signature-mark" viewBox="0 0 116 42" xmlns="http://www.w3.org/2000/svg"><path d="M 4 37 L 25 5 M 37 37 L 58 5 M 70 37 L 91 5" fill="none" stroke="currentColor" stroke-width="6" /><path d="M 98 21 H 116" fill="none" stroke="currentColor" stroke-width="1" /></svg>
-      <span class="signature-line"></span>
-    </div>
     <span class="visually-hidden" id="connectionStatus" data-state="loading" role="status">Connecting to schedule</span>
   </main>
   <noscript><p class="noscript-message">Welcome to Smooth Studios.</p></noscript>

@@ -48,6 +48,13 @@
     hidden(el[`${prefix}NextRow`], !next);
     text(el[`${prefix}Next`], next ? `${next.firstName} · ${Feed.upcomingTime(next, now)}` : '');
   }
+  function renderProgress(prefix, current = null, now = Date.now()) {
+    const progress = el[`${prefix}Progress`];
+    const remaining = current ? Math.max(0, Math.min(100, (current.endMs - now) / (current.endMs - current.startMs) * 100)) : 0;
+    attr(progress, 'value', remaining.toFixed(2));
+    attr(progress, 'aria-valuetext', current ? `${Feed.countdown(current.endMs, now)} remaining` : '');
+    hidden(progress, !current);
+  }
 
   function renderRoom(prefix, panel, events, now, stale) {
     const state = Feed.sessionState(events, now);
@@ -63,6 +70,7 @@
     renderGreeting(guest);
     text(el[`${prefix}TimerLabel`], current ? 'Time remaining' : upcoming ? 'Starts in' : 'Welcome to Smooth Studios');
     text(el[`${prefix}Timer`], current ? Feed.countdown(current.endMs, now) : upcoming ? Feed.countdown(next.startMs, now) : '—');
+    renderProgress(prefix, current, now);
     text(el[`${prefix}Session`], current ? Feed.timeRange(current) : upcoming ? `${Feed.upcomingTime(next, now)}${next.endMs ? ` – ${clockFormat.format(next.endMs)}` : ''}` : 'Enjoy your time here.');
     const showNext = Boolean(current && next && urgent);
     renderNext(prefix, showNext ? next : null, now);
@@ -86,6 +94,7 @@
     if (!feed || expired) {
       renderGreeting();
       renderNext(roomPrefix);
+      renderProgress(roomPrefix);
       hidden(el.sessionBoard, true);
       hidden(el.idleWelcome, false);
       return;
@@ -94,7 +103,7 @@
     const hasEvents = relevantEvents.length > 0;
     hidden(el.idleWelcome, hasEvents);
     hidden(el.sessionBoard, !hasEvents);
-    if (!hasEvents) { renderGreeting(); renderNext(roomPrefix); return; }
+    if (!hasEvents) { renderGreeting(); renderNext(roomPrefix); renderProgress(roomPrefix); return; }
     renderRoom(roomPrefix, roomPanel, relevantEvents, now, stale);
   }
 
