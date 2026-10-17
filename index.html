@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0d0d0f" />
   <meta name="description" content="Welcome to Smooth Studios. Live studio session times and a space to create." />
-  <title>Smooth Studios | Welcome</title>
+  <title>Studio A | Smooth Studios</title>
   <link rel="icon" href="logo.png" type="image/png" />
-  <link rel="stylesheet" href="style.css?v=2.0" />
-  <script src="feed-model.js?v=2.0" defer></script>
-  <script src="script.js?v=2.0" defer></script>
+  <link rel="stylesheet" href="style.css?v=2.0.1" />
+  <script src="feed-model.js?v=2.0.1" defer></script>
+  <script src="script.js?v=2.0.1" defer></script>
 </head>
 <body>
   <main class="welcome-display" id="welcomeDisplay">
@@ -22,13 +22,13 @@
     </header>
 
     <section class="welcome-heading" aria-labelledby="heroTitle">
-      <p class="eyebrow" id="heroEyebrow"><span class="brand-line" aria-hidden="true"></span>YOUR SPACE TO CREATE</p>
+      <p class="eyebrow" id="heroEyebrow"><span class="brand-line" aria-hidden="true"></span><span id="studioLabel">WELCOME</span><span aria-hidden="true">·</span>YOUR SPACE TO CREATE</p>
       <h1 id="heroTitle">Welcome to <span>Smooth Studios.</span></h1>
       <p id="heroSubtitle">Settle in. Make something great.</p>
     </section>
 
-    <section class="session-board" id="sessionBoard" aria-label="Studio sessions">
-      <div class="room-grid" id="roomGrid" data-layout="dual">
+    <section class="session-board" id="sessionBoard" aria-label="Studio sessions" hidden>
+      <div class="room-grid" id="roomGrid" data-layout="single">
         <article class="room-panel" id="studioA" data-state="loading" data-urgent="false" aria-labelledby="aHeading">
           <header class="room-header">
             <h2 id="aHeading"><span class="room-letter" aria-hidden="true">A</span>Studio A</h2>
@@ -44,7 +44,7 @@
           </dl>
         </article>
 
-        <article class="room-panel" id="studioB" data-state="loading" data-urgent="false" aria-labelledby="bHeading">
+        <article class="room-panel" id="studioB" data-state="loading" data-urgent="false" aria-labelledby="bHeading" hidden>
           <header class="room-header">
             <h2 id="bHeading"><span class="room-letter" aria-hidden="true">B</span>Studio B</h2>
             <p class="room-status"><span class="status-dot" aria-hidden="true"></span><span id="bStatus">Loading schedule</span></p>
@@ -59,24 +59,10 @@
           </dl>
         </article>
 
-        <article class="room-panel" id="studioUnassigned" data-state="loading" data-urgent="false" aria-labelledby="unassignedHeading" hidden>
-          <header class="room-header">
-            <h2 id="unassignedHeading"><span class="room-letter room-letter-neutral" aria-hidden="true">S</span>Studio session</h2>
-            <p class="room-status"><span class="status-dot" aria-hidden="true"></span><span id="unassignedStatus">Loading schedule</span></p>
-          </header>
-          <div class="session-main">
-            <div class="session-person"><p class="detail-label">Guest</p><h3 id="unassignedName">—</h3></div>
-            <div class="session-countdown"><p class="detail-label" id="unassignedTimerLabel">Session time</p><p class="timer" id="unassignedTimer">—</p></div>
-          </div>
-          <dl class="session-details">
-            <div class="detail-row"><dt>Session</dt><dd id="unassignedSession">Checking today’s schedule</dd></div>
-            <div class="detail-row"><dt id="unassignedNextLabel">Up next</dt><dd id="unassignedNext">—</dd></div>
-          </dl>
-        </article>
       </div>
     </section>
 
-    <section class="idle-welcome" id="idleWelcome" aria-label="Welcome" hidden>
+    <section class="idle-welcome" id="idleWelcome" aria-label="Welcome">
       <div class="idle-mark" aria-hidden="true"><span></span><span></span><span></span></div>
       <div><h2>Make yourself at home.</h2><p>Your session details will appear here when it’s time.</p></div>
     </section>
@@ -85,7 +71,7 @@
       <div class="studio-tip"><span class="tip-mark" aria-hidden="true">✦</span><p id="studioTip">Need a hand getting started? Ask a studio team member.</p></div>
       <div class="footer-details">
         <span class="connection-status" id="connectionStatus" data-state="loading" role="status">Connecting to schedule</span>
-        <a class="studio-website" href="https://smoothstudios.co" tabindex="-1">smoothstudios.co</a>
+        <span class="studio-website">smoothstudios.co</span>
         <span class="display-version" id="displayVersion"></span>
       </div>
     </footer>

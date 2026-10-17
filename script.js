@@ -9,10 +9,18 @@
   const EXPIRE_MS = 300000;
   const CACHE_KEY = 'smooth-welcome-tv-v2';
   const params = new URLSearchParams(location.search);
-  const roomFilter = ['A', 'B'].includes((params.get('studio') || '').toUpperCase()) ? params.get('studio').toUpperCase() : null;
+  // The existing kiosk lives in Studio A. Studio B has its own ?studio=B URL.
+  const roomFilter = (params.get('studio') || '').toUpperCase() === 'B' ? 'B' : 'A';
   const demo = ['dual', 'urgent', 'idle', 'offline'].includes(params.get('demo')) ? params.get('demo') : null;
   const el = {};
   document.querySelectorAll('[id]').forEach(node => { el[node.id] = node; });
+  const roomPrefix = roomFilter.toLowerCase();
+  const roomPanel = el[`studio${roomFilter}`];
+  document.title = `Studio ${roomFilter} | Smooth Studios`;
+  text(el.studioLabel, `STUDIO ${roomFilter}`);
+  attr(document.body, 'data-studio', roomFilter);
+  hidden(el.studioA, roomFilter !== 'A');
+  hidden(el.studioB, roomFilter !== 'B');
   const clockFormat = new Intl.DateTimeFormat('en-US', { timeZone: Feed.TIME_ZONE, hour: 'numeric', minute: '2-digit' });
   const dateFormat = new Intl.DateTimeFormat('en-US', { timeZone: Feed.TIME_ZONE, weekday: 'long', month: 'long', day: 'numeric' });
   let feed = null;
@@ -67,33 +75,16 @@
     if (!feed || expired) {
       hidden(el.sessionBoard, true);
       hidden(el.idleWelcome, false);
-      text(el.heroSubtitle, 'Welcome in. Make yourself at home.');
+      text(el.heroSubtitle, `Welcome to Studio ${roomFilter}. Make yourself at home.`);
       return;
     }
-    const visibleEvents = feed.events.filter(event => event.endMs ? event.endMs > now : event.startMs > now);
-    const relevantEvents = visibleEvents.filter(event => !roomFilter || event.studio === roomFilter);
+    const relevantEvents = feed.events.filter(event => event.studio === roomFilter && (event.endMs ? event.endMs > now : event.startMs > now));
     const hasEvents = relevantEvents.length > 0;
     hidden(el.idleWelcome, hasEvents);
     hidden(el.sessionBoard, !hasEvents);
-    text(el.heroSubtitle, roomFilter ? `Your time in Studio ${roomFilter}.` : 'Your space. Your time. Your vision.');
+    text(el.heroSubtitle, `Your time in Studio ${roomFilter}.`);
     if (!hasEvents) return;
-    if (feed.legacy) {
-      // A single-booking endpoint cannot prove that either room is empty.
-      hidden(el.studioA, true);
-      hidden(el.studioB, true);
-      hidden(el.studioUnassigned, false);
-      attr(el.roomGrid, 'data-layout', 'legacy');
-      renderRoom('unassigned', el.studioUnassigned, relevantEvents, now, stale);
-    } else {
-      const unassigned = visibleEvents.filter(event => !event.studio);
-      hidden(el.studioA, !!roomFilter && roomFilter !== 'A');
-      hidden(el.studioB, !!roomFilter && roomFilter !== 'B');
-      hidden(el.studioUnassigned, !unassigned.length || !!roomFilter);
-      attr(el.roomGrid, 'data-layout', roomFilter ? 'single' : unassigned.length ? 'with-unassigned' : 'dual');
-      renderRoom('a', el.studioA, visibleEvents.filter(event => event.studio === 'A'), now, stale);
-      renderRoom('b', el.studioB, visibleEvents.filter(event => event.studio === 'B'), now, stale);
-      renderRoom('unassigned', el.studioUnassigned, unassigned, now, stale);
-    }
+    renderRoom(roomPrefix, roomPanel, relevantEvents, now, stale);
   }
 
   function accept(data) {
@@ -151,7 +142,7 @@
       lastAttemptFailed = true;
     } else if (!demo) { localStorage.removeItem(CACHE_KEY); }
   } catch (_) { /* A missing cache never blocks startup. */ }
-  text(el.displayVersion, 'Welcome TV · v2.0');
+  text(el.displayVersion, 'Welcome TV · v2.0.1');
   if (demo) {
     const now = Date.now();
     const event = (firstName, studio, start, end) => ({ firstName, studio, startISO: new Date(now + start * 60000).toISOString(), endISO: new Date(now + end * 60000).toISOString() });
