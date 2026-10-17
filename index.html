@@ -1,47 +1,95 @@
-<!-- index.html (FULL) -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Smooth Studios Display</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0d0d0f" />
+  <meta name="description" content="Welcome to Smooth Studios. Live studio session times and a space to create." />
+  <title>Smooth Studios | Welcome</title>
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="stylesheet" href="style.css?v=2.0" />
+  <script src="feed-model.js?v=2.0" defer></script>
+  <script src="script.js?v=2.0" defer></script>
 </head>
-
 <body>
-  <!-- Ambient moving background + tint + grain -->
-  <div class="bg"></div>
-  <div class="noise"></div>
-
-  <!-- Screensaver -->
-  <div id="screensaver" class="screensaver isHidden">
-    <img id="ssLogo" class="ssLogo" src="logo.png" alt="Smooth Studios Logo" />
-  </div>
-
-  <!-- Session UI -->
-  <main id="sessionUI" class="wrap isHidden" aria-live="polite">
-    <div class="stack">
-      <div class="card">
-        <div class="headline">WELCOME TO SMOOTH STUDIOS</div>
-
-        <div class="clientLine">
-          <span class="clientName" id="clientName">CLIENT</span>
-        </div>
-
-        <div class="meta">
-          <div class="metaRow" id="timeRow">APPOINTMENT TIME: —</div>
-          <div class="metaRow muted" id="dateRow">—</div>
-        </div>
+  <main class="welcome-display" id="welcomeDisplay">
+    <header class="display-header">
+      <img class="studio-logo" src="logolong.png" alt="Smooth Studios" width="415" height="107" decoding="async" />
+      <div class="display-clock" aria-label="Current local time in Tallahassee">
+        <div class="clock-line"><time id="clockTime">—:—</time><span id="clockPeriod"></span></div>
+        <p id="clockDate">Tallahassee, Florida</p>
       </div>
+    </header>
 
-      <!-- Next Up bubble -->
-      <div id="nextUpBubble" class="nextUp isHidden">
-        <div class="nextUpLabel">UP NEXT</div>
-        <div class="nextUpValue" id="nextUpValue">—</div>
+    <section class="welcome-heading" aria-labelledby="heroTitle">
+      <p class="eyebrow" id="heroEyebrow"><span class="brand-line" aria-hidden="true"></span>YOUR SPACE TO CREATE</p>
+      <h1 id="heroTitle">Welcome to <span>Smooth Studios.</span></h1>
+      <p id="heroSubtitle">Settle in. Make something great.</p>
+    </section>
+
+    <section class="session-board" id="sessionBoard" aria-label="Studio sessions">
+      <div class="room-grid" id="roomGrid" data-layout="dual">
+        <article class="room-panel" id="studioA" data-state="loading" data-urgent="false" aria-labelledby="aHeading">
+          <header class="room-header">
+            <h2 id="aHeading"><span class="room-letter" aria-hidden="true">A</span>Studio A</h2>
+            <p class="room-status"><span class="status-dot" aria-hidden="true"></span><span id="aStatus">Loading schedule</span></p>
+          </header>
+          <div class="session-main">
+            <div class="session-person"><p class="detail-label">Guest</p><h3 id="aName">—</h3></div>
+            <div class="session-countdown"><p class="detail-label" id="aTimerLabel">Session time</p><p class="timer" id="aTimer">—</p></div>
+          </div>
+          <dl class="session-details">
+            <div class="detail-row"><dt>Session</dt><dd id="aSession">Checking today’s schedule</dd></div>
+            <div class="detail-row"><dt id="aNextLabel">Up next</dt><dd id="aNext">—</dd></div>
+          </dl>
+        </article>
+
+        <article class="room-panel" id="studioB" data-state="loading" data-urgent="false" aria-labelledby="bHeading">
+          <header class="room-header">
+            <h2 id="bHeading"><span class="room-letter" aria-hidden="true">B</span>Studio B</h2>
+            <p class="room-status"><span class="status-dot" aria-hidden="true"></span><span id="bStatus">Loading schedule</span></p>
+          </header>
+          <div class="session-main">
+            <div class="session-person"><p class="detail-label">Guest</p><h3 id="bName">—</h3></div>
+            <div class="session-countdown"><p class="detail-label" id="bTimerLabel">Session time</p><p class="timer" id="bTimer">—</p></div>
+          </div>
+          <dl class="session-details">
+            <div class="detail-row"><dt>Session</dt><dd id="bSession">Checking today’s schedule</dd></div>
+            <div class="detail-row"><dt id="bNextLabel">Up next</dt><dd id="bNext">—</dd></div>
+          </dl>
+        </article>
+
+        <article class="room-panel" id="studioUnassigned" data-state="loading" data-urgent="false" aria-labelledby="unassignedHeading" hidden>
+          <header class="room-header">
+            <h2 id="unassignedHeading"><span class="room-letter room-letter-neutral" aria-hidden="true">S</span>Studio session</h2>
+            <p class="room-status"><span class="status-dot" aria-hidden="true"></span><span id="unassignedStatus">Loading schedule</span></p>
+          </header>
+          <div class="session-main">
+            <div class="session-person"><p class="detail-label">Guest</p><h3 id="unassignedName">—</h3></div>
+            <div class="session-countdown"><p class="detail-label" id="unassignedTimerLabel">Session time</p><p class="timer" id="unassignedTimer">—</p></div>
+          </div>
+          <dl class="session-details">
+            <div class="detail-row"><dt>Session</dt><dd id="unassignedSession">Checking today’s schedule</dd></div>
+            <div class="detail-row"><dt id="unassignedNextLabel">Up next</dt><dd id="unassignedNext">—</dd></div>
+          </dl>
+        </article>
       </div>
-    </div>
+    </section>
+
+    <section class="idle-welcome" id="idleWelcome" aria-label="Welcome" hidden>
+      <div class="idle-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div><h2>Make yourself at home.</h2><p>Your session details will appear here when it’s time.</p></div>
+    </section>
+
+    <footer class="display-footer">
+      <div class="studio-tip"><span class="tip-mark" aria-hidden="true">✦</span><p id="studioTip">Need a hand getting started? Ask a studio team member.</p></div>
+      <div class="footer-details">
+        <span class="connection-status" id="connectionStatus" data-state="loading" role="status">Connecting to schedule</span>
+        <a class="studio-website" href="https://smoothstudios.co" tabindex="-1">smoothstudios.co</a>
+        <span class="display-version" id="displayVersion"></span>
+      </div>
+    </footer>
   </main>
-
-  <script src="script.js"></script>
+  <noscript><p class="noscript-message">JavaScript is required to display the live studio schedule.</p></noscript>
 </body>
 </html>
