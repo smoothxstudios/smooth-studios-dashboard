@@ -27,3 +27,6 @@
 @supports(font-size:1cqh){.day-column[data-density="compact"] .rental-card{font-size:min(1.45vw,calc((100cqh - (var(--rental-count) - 1) * .45vh) / var(--rental-count) / var(--rental-line-factor)))}}
 @media(min-aspect-ratio:1/1){.hero-guest{font-size:clamp(40px,min(8.2vw,13.5vh),295px)}}
 @media(max-aspect-ratio:1/1){.day-bookings{container-type:normal}.day-column[data-density="compact"] .rental-card{font-size:16px}.day-column[data-density="compact"] .day-bookings{gap:6px}.welcome-accent{width:72px;height:5px;margin:16px auto}}
+
+/* Center the divider optically between the uppercase heading and guest name. */
+#heroTitle[data-personalized="true"] .welcome-accent{transform:translateY(.8vh)}
