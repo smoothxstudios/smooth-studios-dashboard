@@ -93,8 +93,7 @@
   }
   function renderCalendar(events, state, now) {
     const days = Feed.weekDays(now);
-    const page = Math.floor(now / 12000);
-    const signature = [days[0].date, Feed.localDate(now), page, state.next?.key,
+    const signature = [days[0].date, Feed.localDate(now), state.next?.key,
       ...events.map(event => event.key)].join(';');
     text(el.calendarNext, state.next ? `${Feed.relativeTime(state.next.startMs, now)} · Studio ${state.next.studio}` : 'No Upcoming Bookings');
     text(el.calendarReturn, state.returnAt ? Feed.relativeTime(state.returnAt, now) : 'One Hour Before The Next Booking');
@@ -115,19 +114,24 @@
       column.appendChild(heading);
       const list = element('div', 'day-bookings');
       const bookings = events.filter(event => ['A', 'B'].includes(event.studio) && event.startMs < day.endMs && event.endMs > day.startMs);
-      const pages = Math.ceil(bookings.length / 3);
-      const activePage = pages ? page % pages : 0;
-      bookings.slice(activePage * 3, (activePage + 1) * 3).forEach(event => {
+      attr(column, 'data-density', bookings.length > 3 ? 'compact' : 'normal');
+      const lineFactor = bookings.some(event => Feed.calendarTime(event, day).length > 15) ? 3.2 : 2.05;
+      attr(list, 'style', `--rental-count:${Math.max(1, bookings.length)};--rental-line-factor:${lineFactor}`);
+      bookings.forEach(event => {
         const card = element('div', 'rental-card');
         attr(card, 'data-studio', event.studio);
-        if (state.next && event.key === state.next.key) card.appendChild(element('span', 'rental-badge', 'Up Next'));
-        card.appendChild(element('h3', 'rental-title', `Studio ${event.studio}`));
+        const isNext = Boolean(state.next && event.key === state.next.key);
+        attr(card, 'data-next', String(isNext));
+        if (isNext) card.appendChild(element('span', 'rental-badge', 'Up Next'));
+        const title = element('h3', 'rental-title');
+        title.appendChild(element('span', 'studio-word', 'Studio '));
+        title.appendChild(element('span', 'studio-letter', event.studio));
+        card.appendChild(title);
         card.appendChild(element('p', 'rental-time', Feed.calendarTime(event, day)));
         list.appendChild(card);
       });
       if (!bookings.length) list.appendChild(element('p', 'no-rentals', 'No Rentals'));
       column.appendChild(list);
-      if (pages > 1) column.appendChild(element('p', 'page-note', `${activePage + 1} / ${pages} · ${bookings.length} Rentals`));
       el.weekGrid.appendChild(column);
     });
   }

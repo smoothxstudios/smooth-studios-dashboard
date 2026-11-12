@@ -11,7 +11,7 @@ The existing GitHub Pages and linked Netlify deployments remain in place.
 - After the last appointment across both studios ends, show the current Monday–Sunday rental calendar for both rooms. Studio A is red; Studio B is blue. The weekly view shows room labels and times, not client names.
 - Keep the calendar overnight and on empty days until exactly one hour before the next scheduled booking. Between same-day bookings, keep the welcome display. Active overnight bookings stay on the welcome display.
 - All dates and switching boundaries use America/New_York, including DST. The week rolls over at local Monday midnight.
-- A busy day shows three rentals at a time and automatically rotates pages every twelve seconds. The day shows its page number and total rental count.
+- Every rental is visible in the same weekly view. Busy days use compact, color-coded rows with adaptive sizing; there are no rotating pages or page counters.
 - No buttons, clickable links, employee information, or editing controls on the TV.
 
 | TV | Launch URL |
@@ -43,7 +43,7 @@ Preview samples with `?demo=weekly`, `?demo=welcome`, or `?demo=busy`. Existing 
 
 ### 3.0.0 — November 12, 2026
 
-Implemented the approved welcome and weekly-calendar layouts, automatic after-hours scheduling, both-room weekly cards, and busy-day rotation. Activated the approved weekly Apps Script feed as Version 13.
+Implemented the approved welcome and weekly-calendar layouts, automatic after-hours scheduling, both-room weekly cards, and compact busy-day layouts. Activated the approved weekly Apps Script feed as Version 13.
 
 ### 2.2.3 — October 17, 2026
 

@@ -405,19 +405,24 @@ test('idle and legacy feeds never substitute an opposite or unassigned booking f
 });
 
 
-test('weekly calendar shows both studios without client names and paginates busy days', () => {
+test('weekly calendar keeps every rental visible without paging or client names', () => {
   const h = browser({ search:'?demo=busy' });
   assert.equal(h.elements.calendarView.hidden,false);
   assert.equal(h.elements.welcomeView.hidden,true);
   assert.equal(h.elements.weekGrid.children.length,7);
   const collect = node => [node.textContent,...(node.children||[]).flatMap(collect)];
-  const content=collect(h.elements.weekGrid).join(' ');
+  const content=collect(h.elements.weekGrid).join('');
   assert.match(content,/Studio A/); assert.match(content,/Studio B/);
   assert.doesNotMatch(content,/Guest|Alex|Jordan/);
-  assert.match(content,/9 Rentals/);
-  const initial=collect(h.elements.weekGrid.children[5]).join(' ');
-  h.advance(12020);
-  assert.notEqual(collect(h.elements.weekGrid.children[5]).join(' '),initial);
+  const busyDay=h.elements.weekGrid.children[5];
+  const rentals=busyDay.children.find(n=>n.className==='day-bookings').children;
+  assert.equal(rentals.length,9, 'All nine rentals must be present together');
+  const initial=collect(busyDay).join('');
+  assert.match(initial,/9–9:30 AM/);
+  assert.match(initial,/5–5:30 PM/);
+  assert.doesNotMatch(content,/\d+ \/ \d+/);
+  h.advance(36020);
+  assert.equal(collect(h.elements.weekGrid.children[5]).join(''),initial, 'Rentals must not rotate out of view');
   assert.equal(h.requests(),0);
   assert.deepEqual(h.storageWrites,[]);
 });
