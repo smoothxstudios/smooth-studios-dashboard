@@ -25,7 +25,7 @@ Refresh an already-open Chromium kiosk once after a code release. Calendar data 
 
 `_apps-script/Code.js` is the source of the existing Google Apps Script web app. Saving it in Git does not deploy it to Google.
 
-**v3 deployment status:** The frontend is ready for the expanded feed. Publishing the expanded feed is awaiting explicit owner approval after automatic approval review blocked its deployment. Until the new Apps Script version is activated, the public display continues its welcome/session behavior and does not misrepresent the old two-day feed as a complete week. The Apps Script draft is prepared for the existing deployment ID.
+**v3 deployment status:** Live. The owner approved the expanded public room/time feed on November 12, 2026, and the existing Apps Script web app was updated to Version 13. Both TV URLs now receive the full weekly coverage required for automatic calendar mode.
 
 The v3 feed includes completed bookings in the current week and future rentals through the following Sunday, with explicit range coverage metadata. This supports weekly history, empty days, and Sunday/Monday transitions. Additional history and lookahead contain studio labels and times only; first names are limited to the pre-existing live today/tomorrow window. No descriptions, contact information, payment details, employee data, or calendar IDs are returned.
 
@@ -43,7 +43,7 @@ Preview samples with `?demo=weekly`, `?demo=welcome`, or `?demo=busy`. Existing 
 
 ### 3.0.0 — November 12, 2026
 
-Implemented the approved welcome and weekly-calendar layouts, automatic after-hours scheduling, both-room weekly cards, and busy-day rotation. Prepared the weekly Apps Script feed; activation requires owner approval as described above.
+Implemented the approved welcome and weekly-calendar layouts, automatic after-hours scheduling, both-room weekly cards, and busy-day rotation. Activated the approved weekly Apps Script feed as Version 13.
 
 ### 2.2.3 — October 17, 2026
 
