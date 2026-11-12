@@ -1,62 +1,36 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#101012" />
-  <meta name="description" content="A personal welcome to Smooth Studios." />
-  <title>Studio A | Smooth Studios</title>
-  <link rel="icon" href="logo.png" type="image/png" />
-  <link rel="stylesheet" href="style.css?v=2.2.3" />
-  <script src="feed-model.js?v=2.2.3" defer></script>
-  <script src="script.js?v=2.2.3" defer></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0c0c0f">
+<meta name="description" content="Smooth Studios welcome display and weekly rental calendar."><title>Studio A | Smooth Studios</title>
+<link rel="icon" href="logo.png" type="image/png"><link rel="stylesheet" href="style.css?v=3.0.0">
+<script src="feed-model.js?v=3.0.0" defer></script><script src="script.js?v=3.0.0" defer></script>
 </head>
 <body>
-  <main class="welcome-display" id="welcomeDisplay">
-    <header class="display-header">
-      <div class="brand-lockup">
-        <img class="studio-logo" src="logolong.png" alt="Smooth Studios" width="415" height="107" decoding="async" />
-        <span id="previewLabel" class="preview-label" hidden>Preview</span>
-      </div>
-      <div class="display-clock" aria-label="Current local time in Tallahassee">
-        <div class="clock-line"><time id="clockTime">—:—</time><span id="clockPeriod"></span></div>
-        <p id="clockDate">Tallahassee, Florida</p>
-      </div>
-    </header>
-
-    <section class="welcome-heading" aria-labelledby="heroTitle">
-      <h1 id="heroTitle" data-personalized="false">
-        <span class="hero-intro">Welcome to</span>
-        <span id="heroStudio">Smooth Studios</span>
-        <span class="hero-guest" id="heroGuest" data-length="short" hidden></span>
-      </h1>
-
-      <section class="session-board" id="sessionBoard" aria-label="Your studio session" hidden>
-        <div class="room-grid" id="roomGrid" data-layout="single">
-          <article class="session-rail" id="studioA" data-state="loading" data-urgent="false" aria-label="Studio A session">
-            <div class="session-countdown"><p class="detail-label" id="aTimerLabel">Session time</p><p class="timer" id="aTimer">—</p></div>
-            <dl class="session-details"><div><dt>Session</dt><dd id="aSession">—</dd></div></dl>
-            <div class="session-track"><progress id="aProgress" class="session-progress" max="100" value="100" aria-label="Session time remaining" hidden></progress></div>
-            <div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="aStatus">Loading schedule</span></div>
-            <dl class="next-session" id="aNextRow" hidden><div><dt id="aNextLabel">Up next</dt><dd id="aNext"></dd></div></dl>
-          </article>
-          <article class="session-rail" id="studioB" data-state="loading" data-urgent="false" aria-label="Studio B session" hidden>
-            <div class="session-countdown"><p class="detail-label" id="bTimerLabel">Session time</p><p class="timer" id="bTimer">—</p></div>
-            <dl class="session-details"><div><dt>Session</dt><dd id="bSession">—</dd></div></dl>
-            <div class="session-track"><progress id="bProgress" class="session-progress" max="100" value="100" aria-label="Session time remaining" hidden></progress></div>
-            <div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="bStatus">Loading schedule</span></div>
-            <dl class="next-session" id="bNextRow" hidden><div><dt id="bNextLabel">Up next</dt><dd id="bNext"></dd></div></dl>
-          </article>
-        </div>
-      </section>
-
-      <div class="idle-welcome" id="idleWelcome" aria-hidden="true">
-        <svg class="signature-mark" viewBox="0 0 116 42" xmlns="http://www.w3.org/2000/svg"><path d="M 4 37 L 25 5 M 37 37 L 58 5 M 70 37 L 91 5" fill="none" stroke="currentColor" stroke-width="6" /><path d="M 98 21 H 116" fill="none" stroke="currentColor" stroke-width="1" /></svg>
-        <span class="signature-line"></span>
-      </div>
-    </section>
-    <span class="visually-hidden" id="connectionStatus" data-state="loading" role="status">Connecting to schedule</span>
-  </main>
-  <noscript><p class="noscript-message">Welcome to Smooth Studios.</p></noscript>
-</body>
-</html>
+<main class="welcome-display" id="welcomeDisplay">
+<header class="display-header">
+<div class="brand-lockup"><img class="studio-logo" src="logolong.png" alt="Smooth Studios" width="415" height="107"><span id="modeLabel" class="mode-label">Studio A</span><span id="previewLabel" class="preview-label" hidden>Sample Schedule</span></div>
+<div class="display-clock" aria-label="Current local time in Tallahassee"><div class="clock-line"><time id="clockTime">—:—</time><span id="clockPeriod"></span></div><p id="clockDate">Tallahassee, Florida</p></div>
+</header>
+<section class="welcome-heading" id="welcomeView" aria-labelledby="heroTitle">
+<div class="welcome-card card"><h1 id="heroTitle" data-personalized="false"><span class="hero-intro">Welcome To</span><span id="heroStudio">Smooth Studios</span><span class="hero-guest" id="heroGuest" data-length="short" hidden></span></h1><div class="welcome-accent" aria-hidden="true"></div><div class="idle-welcome" id="idleWelcome"><span id="idleMessage">Make Yourself At Home</span></div></div>
+<section class="session-board" id="sessionBoard" aria-label="Your studio session" hidden><div class="room-grid" id="roomGrid" data-layout="single">
+<article class="session-rail" id="studioA" data-state="loading" data-urgent="false" aria-label="Studio A session">
+<div class="booking-card card"><div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="aStatus">Loading Schedule</span></div><h2 class="session-title">Session</h2><dl class="session-details"><div><dt class="visually-hidden">Session</dt><dd id="aSession">—</dd></div></dl><dl class="next-session" id="aNextRow" hidden><div><dt id="aNextLabel">Up next</dt><dd id="aNext"></dd></div></dl></div>
+<div class="timer-card card"><div class="session-countdown"><p class="detail-label" id="aTimerLabel">Session Time</p><p class="timer" id="aTimer">—</p></div><div class="session-track"><progress id="aProgress" class="session-progress" max="100" value="100" aria-label="Session time remaining" hidden></progress></div></div>
+</article>
+<article class="session-rail" id="studioB" data-state="loading" data-urgent="false" aria-label="Studio B session" hidden>
+<div class="booking-card card"><div class="session-status"><span class="status-dot" aria-hidden="true"></span><span id="bStatus">Loading Schedule</span></div><h2 class="session-title">Session</h2><dl class="session-details"><div><dt class="visually-hidden">Session</dt><dd id="bSession">—</dd></div></dl><dl class="next-session" id="bNextRow" hidden><div><dt id="bNextLabel">Up next</dt><dd id="bNext"></dd></div></dl></div>
+<div class="timer-card card"><div class="session-countdown"><p class="detail-label" id="bTimerLabel">Session Time</p><p class="timer" id="bTimer">—</p></div><div class="session-track"><progress id="bProgress" class="session-progress" max="100" value="100" aria-label="Session time remaining" hidden></progress></div></div>
+</article>
+</div></section>
+</section>
+<section class="calendar-view" id="calendarView" aria-labelledby="weekTitle" hidden>
+<div class="calendar-toolbar"><div class="week-heading"><h1 id="weekTitle">This Week</h1><p id="weekRange"></p></div><div class="studio-legend"><span><i class="legend-dot studio-a"></i>Studio A</span><span><i class="legend-dot studio-b"></i>Studio B</span></div></div>
+<div class="week-grid card" id="weekGrid" aria-label="Weekly studio rentals"></div>
+<div class="calendar-footer card"><div class="next-booking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 2v6m10-6v6M3 11h18M7 15h2m3 0h2m3 0h1M7 18h2m3 0h2"/></svg><div><p class="detail-label">Next Booking</p><p class="footer-value" id="calendarNext">—</p></div></div><div class="return-time"><p class="detail-label">Welcome Screen Returns</p><p class="footer-value" id="calendarReturn">—</p></div></div>
+</section>
+<footer class="display-footer"><span>smoothstudios.co</span><span id="connectionNotice" class="connection-notice" hidden></span></footer>
+<span class="visually-hidden" id="connectionStatus" data-state="loading" role="status">Connecting to schedule</span>
+</main><noscript><p>Welcome to Smooth Studios.</p></noscript>
+</body></html>

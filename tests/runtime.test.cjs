@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sources = ['feed-model.js', 'script.js'].map(name => fs.readFileSync(path.join(root, name), 'utf8'));
 const NOW = Date.parse('2026-10-17T22:00:00Z');
-const CACHE_KEY = 'smooth-welcome-tv-v2';
+const CACHE_KEY = 'smooth-welcome-tv-v3';
 const event = (studio, firstName, startMinutes, endMinutes) => ({ studio, firstName,
   startISO: new Date(NOW + startMinutes * 60000).toISOString(),
   endISO: new Date(NOW + endMinutes * 60000).toISOString() });
@@ -16,8 +16,8 @@ const schedule = events => ({ schemaVersion: 2, ok: true, events });
 
 // The harness exposes only browser operations and rendered output. No runtime
 // functions or closed-over application state are accessed by these tests.
-function browser({ search = '', saved, online = true, fromHTML = false } = {}) {
-  let now = NOW;
+function browser({ search = '', saved, online = true, fromHTML = false, initialNow = NOW } = {}) {
+  let now = initialNow;
   let timerId = 0;
   let requestCount = 0;
   const timers = new Map();
@@ -27,7 +27,7 @@ function browser({ search = '', saved, online = true, fromHTML = false } = {}) {
   const windowEvents = new Map();
   const documentEvents = new Map();
   function node(id, attributes = {}) {
-    return { id, textContent: '', hidden: Object.hasOwn(attributes, 'hidden'), attributes,
+    return { id, children: [], appendChild(child) { this.children.push(child); }, replaceChildren(...children) { this.children = children; }, textContent: '', hidden: Object.hasOwn(attributes, 'hidden'), attributes,
       getAttribute(key) { return this.attributes[key] ?? null; },
       setAttribute(key, value) { this.attributes[key] = String(value); } };
   }
@@ -54,7 +54,7 @@ function browser({ search = '', saved, online = true, fromHTML = false } = {}) {
     body: node('body'),
     querySelectorAll(selector) { assert.equal(selector, '[id]'); return Object.values(elements); },
     createElement(tag) {
-      assert.equal(tag, 'script');
+      if (tag !== 'script') return node('');
       return { remove() { const index = scripts.indexOf(this); if (index >= 0) scripts.splice(index, 1); } };
     },
     head: { appendChild(script) { requestCount++; scripts.push(script); } },
@@ -135,7 +135,7 @@ function assertGuestAbsent(h, ...names) {
   for (const name of names) assert.ok(!text.includes(name), `${name} must never be rendered in this room`);
 }
 function assertGreeting(h, name = '') {
-  assert.equal(h.text('heroStudio'), name ? 'Smooth Studios' : 'Smooth Studios.');
+  assert.equal(h.text('heroStudio'), 'Smooth Studios');
   assert.equal(h.text('heroGuest'), name);
   assert.equal(h.elements.heroGuest.hidden, !name);
 }
@@ -200,7 +200,7 @@ test('concurrent bookings show only the selected room with independent countdown
       assertGuestAbsent(h, 'Jordan', 'Morgan', 'UnassignedGuest');
     } else {
       assertGreeting(h, 'Jordan');
-      assert.equal(h.text('bTimer'), '1:30:00 hrs');
+      assert.equal(h.text('bTimer'), '1h 30m');
       assertProgress(h, 'b', 90);
       assert.equal(h.elements.studioB.getAttribute('data-urgent'), 'false');
       assertNext(h, 'b');
@@ -402,4 +402,37 @@ test('idle and legacy feeds never substitute an opposite or unassigned booking f
     assert.equal(selected.elements.sessionBoard.hidden, false);
     assertGreeting(selected, 'SelectedGuest');
   }
+});
+
+
+test('weekly calendar shows both studios without client names and paginates busy days', () => {
+  const h = browser({ search:'?demo=busy' });
+  assert.equal(h.elements.calendarView.hidden,false);
+  assert.equal(h.elements.welcomeView.hidden,true);
+  assert.equal(h.elements.weekGrid.children.length,7);
+  const collect = node => [node.textContent,...(node.children||[]).flatMap(collect)];
+  const content=collect(h.elements.weekGrid).join(' ');
+  assert.match(content,/Studio A/); assert.match(content,/Studio B/);
+  assert.doesNotMatch(content,/Guest|Alex|Jordan/);
+  assert.match(content,/9 Rentals/);
+  const initial=collect(h.elements.weekGrid.children[5]).join(' ');
+  h.advance(12020);
+  assert.notEqual(collect(h.elements.weekGrid.children[5]).join(' '),initial);
+  assert.equal(h.requests(),0);
+  assert.deepEqual(h.storageWrites,[]);
+});
+
+test('weekly calendar switches to welcome at the one-hour boundary and clears stale data on outage', () => {
+  const start=Date.parse('2026-11-13T10:59:59-05:00');
+  const h=browser({initialNow:start});
+  h.respond({schemaVersion:2,rangeStartISO:'2026-11-09T00:00:00-05:00',rangeEndISO:'2026-11-23T00:00:00-05:00',events:[{studio:'A',firstName:'Alex',startISO:'2026-11-13T12:00:00-05:00',endISO:'2026-11-13T13:00:00-05:00'}]});
+  assert.equal(h.elements.calendarView.hidden,false);
+  h.advance(1020);
+  assert.equal(h.elements.calendarView.hidden,true);
+  assert.equal(h.elements.welcomeView.hidden,false);
+  assertGreeting(h,'Alex');
+  h.advance(301000);
+  assert.equal(h.elements.calendarView.hidden,true);
+  assert.equal(h.elements.sessionBoard.hidden,true);
+  assertGreeting(h);
 });

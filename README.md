@@ -1,59 +1,49 @@
 # Smooth Studios Welcome TV
 
-Client-facing studio display at https://smoothxstudios.github.io/smooth-studios-dashboard/.
+Read-only TV display at https://smoothxstudios.github.io/smooth-studios-dashboard/.
 The existing GitHub Pages and linked Netlify deployments remain in place.
 
 ## Display
 
-- A dedicated, read-only TV display for each room. The original URL defaults to Studio A; `?studio=B` shows Studio B only.
-- An oversized personal welcome using the displayed guest’s first name in all caps, with the session range and countdown floating above a slim bar directly under the name.
-- The bar shows the proportion of session time remaining and shrinks as the countdown runs. Before a booking starts, a neutral track accompanies the “Starts in” timer.
-- A restrained red warning during the final ten minutes; next guest appears in that room’s final-ten-minute row.
-- Only the selected room’s bookings appear. Unmapped rentals are excluded; never guess a room.
-- A welcome screen when no sessions remain, and a subtle amber session status during brief outages.
-- No clickable links, controls, or room-switching UI. The room is selected by its URL and identified in the browser title; room headings and duplicate guest labels are removed from the display.
+- Rounded charcoal cards, red brand accents, and large text matching the approved TV concepts.
+- During the booking day, each TV shows its assigned room's personal welcome, session time, and countdown. Names use only the existing first-name field.
+- The final-ten-minute warning, remaining-time bar, and next guest are preserved.
+- After the last appointment across both studios ends, show the current Monday–Sunday rental calendar for both rooms. Studio A is red; Studio B is blue. The weekly view shows room labels and times, not client names.
+- Keep the calendar overnight and on empty days until exactly one hour before the next scheduled booking. Between same-day bookings, keep the welcome display. Active overnight bookings stay on the welcome display.
+- All dates and switching boundaries use America/New_York, including DST. The week rolls over at local Monday midnight.
+- A busy day shows three rentals at a time and automatically rotates pages every twelve seconds. The day shows its page number and total rental count.
+- No buttons, clickable links, employee information, or editing controls on the TV.
 
-| TV | Raspberry Pi launch URL |
+| TV | Launch URL |
 | --- | --- |
 | Studio A | https://smoothxstudios.github.io/smooth-studios-dashboard/ |
 | Studio B | https://smoothxstudios.github.io/smooth-studios-dashboard/?studio=B |
 
-The design uses a clean charcoal backdrop with centered, oversized typography and restrained red brand accents. Decorative background artwork and the slogan are omitted. The guest’s name appears once as the focal point. It uses local logo assets and system fonts, with no frontend packages, build step, background video, animation loop, or recurring full-page reload.
+Refresh an already-open Chromium kiosk once after a code release. Calendar data and display transitions then update automatically.
 
-## Calendar feed
+## Calendar feed and deployment
 
-`_apps-script/Code.js` is the source for the existing Google Apps Script web app. Its deployment is separate from GitHub Pages; saving this file in Git does not deploy it to Google.
+`_apps-script/Code.js` is the source of the existing Google Apps Script web app. Saving it in Git does not deploy it to Google.
 
-The script reads the exact calendar named **Smooth Studios**, unless Script Properties configure `CALENDAR_IDS`, `STUDIO_A_CALENDAR_ID`, or `STUDIO_B_CALENDAR_ID`. It never falls back to a personal calendar. Room inference uses explicit appointment labels or room fields. It retains Studio Rental, Quick Studio Rental, Studio A Rental, and Studio B Rental.
+**v3 deployment status:** The frontend is ready for the expanded feed. Publishing the expanded feed is awaiting explicit owner approval after automatic approval review blocked its deployment. Until the new Apps Script version is activated, the public display continues its welcome/session behavior and does not misrepresent the old two-day feed as a complete week. The Apps Script draft is prepared for the existing deployment ID.
 
-Public output is limited to first names, room labels, and session times. It does not return descriptions, client contact details, payment information, calendar IDs, or employee data. Failure responses are distinguishable from an empty schedule.
+The v3 feed includes completed bookings in the current week and future rentals through the following Sunday, with explicit range coverage metadata. This supports weekly history, empty days, and Sunday/Monday transitions. Additional history and lookahead contain studio labels and times only; first names are limited to the pre-existing live today/tomorrow window. No descriptions, contact information, payment details, employee data, or calendar IDs are returned.
 
-The screen requests the feed every ten seconds after a successful response. Calendar reads are cached for fifteen seconds. Requests never overlap, time out after fifteen seconds, and back off after failures. A brief outage preserves the last confirmed schedule with an amber session status; after five minutes it hides the stale schedule and clears the personal welcome. Connection details remain available to assistive technology. A timestamped local cache survives short kiosk restarts. Hidden tabs suspend work and resume on return.
+The script reads the exact calendar named **Smooth Studios**, unless Script Properties configure `CALENDAR_IDS`, `STUDIO_A_CALENDAR_ID`, or `STUDIO_B_CALENDAR_ID`. It never falls back to a personal calendar. Room inference uses explicit appointment labels or room fields. It retains the existing Studio Rental, Quick Studio Rental, Studio A Rental, and Studio B Rental categories. Unknown or conflicting room assignments are never guessed. Cancelled, all-day, invalid, and unrelated events are excluded.
 
-## Manual booking tests
-
-Create a timed event in the calendar configured for the existing TV feed. A separate test calendar will not be read unless it is explicitly configured.
-
-| Field | Studio A | Studio B |
-| --- | --- | --- |
-| Title | `Alex Test: Studio A Rental` | `Jordan Test: Studio B Rental` |
-| Start | Five minutes ago | Five minutes ago |
-| End | Thirty minutes from now | Thirty minutes from now |
-| All-day | Off | Off |
-
-These titles provide both the guest and room; no description is required. An optional description with `Name: Alex Test` and `Studio: A` on separate lines also works. `Name:` overrides the title’s name. Only the first name is displayed. Room labels must agree; conflicting or missing rooms are excluded. No payment information or booking ID is required.
-
-Allow roughly 20–30 seconds for the event to appear. A current event shows time remaining; when there is no current event, the next booking appears immediately with “Starts in.” The feed includes active sessions and future bookings through tomorrow in Eastern time. All-day events, ended bookings, and titles containing “Canceled” or “Cancelled” are excluded.
-
-To test the final-ten-minute warning, set Alex’s end to eight minutes from now and add `Taylor Test: Studio A Rental` starting ten minutes from now. Alex should show “Wrapping up” and Taylor should appear in “Up next.” Use the normal room URLs without a `demo=` parameter for real calendar tests. Delete test events when finished.
+The TV requests the feed every ten seconds after success; calendar reads are cached for fifteen seconds. Requests never overlap, time out after fifteen seconds, and back off on failure. A brief outage keeps the last confirmed schedule with a visible amber notice. After five minutes, stale schedules and personal greetings are hidden. A validated local cache survives short restarts. Hidden tabs suspend work and resume immediately.
 
 ## Verification
 
-Run `node --test tests/*.test.cjs`. Tests cover simultaneous rooms, exact session boundaries, long timers, legacy feeds, JSONP cleanup/retry, caching and outages, room filtering, privacy, calendar failures, overnight bookings, and daylight-saving changes.
+Run `node --test tests/*.test.cjs`. Coverage includes the exact last-end and one-hour thresholds, same-day gaps, overlapping and overnight bookings, empty days, Monday rollover, DST transitions, independent room welcomes, busy-day paging, privacy, feed failures, JSONP cleanup/retry, and cache expiry.
 
-Preview sample states using `?demo=dual`, `?demo=urgent`, `?demo=idle`, or `?demo=offline`. Preview mode is labeled, never calls the calendar, and does not modify the live cache. These are simulated guests, not bookings. Remove the query string for normal operation.
+Preview samples with `?demo=weekly`, `?demo=welcome`, or `?demo=busy`. Existing `?demo=dual`, `?demo=urgent`, `?demo=idle`, and `?demo=offline` remain available. Samples are explicitly labeled, never contact the calendar, and never modify the live cache. Remove `demo` for actual bookings; retain `studio=B` when appropriate.
 
 ## Releases
+
+### 3.0.0 — November 12, 2026
+
+Implemented the approved welcome and weekly-calendar layouts, automatic after-hours scheduling, both-room weekly cards, and busy-day rotation. Prepared the weekly Apps Script feed; activation requires owner approval as described above.
 
 ### 2.2.3 — October 17, 2026
 
@@ -92,3 +82,4 @@ Made the display fully read-only and removed the clickable website link. The exi
 Rebuilt the Welcome TV in the current Studio Dashboard style. Added independent room sessions, repaired hour-long timers, improved idle and reconnection states, removed broken CSS and continuous layout work, and upgraded the minimal calendar feed for both studios. Existing TV URL retained.
 
 To update an already-open kiosk after a code release, refresh Chromium once. Schedule updates then continue automatically.
+

@@ -80,10 +80,10 @@ test("returns both concurrent studios and tomorrow, with only first names and ti
   assert.equal(feed.timeZone, "America/New_York");
   assert.equal(feed.generatedAt, NOW);
   assert.doesNotMatch(JSON.stringify(feed), /PrivateSurname|HiddenSurname|private-|PRIVATE_|999|Phone|Email/);
-  assert.deepEqual(h.windows, [["2026-10-17T04:00:00.000Z", "2026-10-19T04:00:00.000Z"]]);
+  assert.deepEqual(h.windows, [["2026-10-12T04:00:00.000Z", "2026-10-26T04:00:00.000Z"]]);
 });
 
-test("excludes ended, cancelled, all-day, invalid, unrelated and outside-window events", () => {
+test("retains completed rentals but excludes cancelled, all-day, invalid, unrelated and outside-window events", () => {
   const h = harness({ events: [
     rental({ id: "done", end: NOW }),
     rental({ id: "canceled", title: "Canceled: Studio A Rental" }),
@@ -91,10 +91,11 @@ test("excludes ended, cancelled, all-day, invalid, unrelated and outside-window 
     rental({ id: "all-day", allDay: true }),
     rental({ id: "backwards", start: "2026-10-17T23:45:00Z" }),
     rental({ id: "unrelated", title: "Other: Portrait Photography" }),
-    rental({ id: "outside", start: "2026-10-19T04:00:00Z", end: "2026-10-19T05:00:00Z" }),
+    rental({ id: "outside", start: "2026-10-26T04:00:00Z", end: "2026-10-26T05:00:00Z" }),
   ] });
   const feed = h.read();
-  assert.deepEqual(feed.events, []);
+  assert.equal(feed.events.length, 1);
+  assert.equal(feed.events[0].endISO, NOW);
   assert.equal(feed.ok, true);
   assert.equal(feed.isLive, false);
   assert.equal(feed.title, null);
@@ -118,10 +119,10 @@ test("keeps an overnight active session and uses Eastern midnight across both DS
     rental({ start: "2026-11-01T03:00:00Z", end: "2026-11-01T08:00:00Z" }),
   ] });
   assert.equal(h.read().events.length, 1);
-  assert.deepEqual(h.windows[0], ["2026-11-01T04:00:00.000Z", "2026-11-03T05:00:00.000Z"]);
+  assert.deepEqual(h.windows[0], ["2026-10-26T04:00:00.000Z", "2026-11-09T05:00:00.000Z"]);
   const spring = harness({ now: "2026-03-08T07:30:00Z" });
   spring.read();
-  assert.deepEqual(spring.windows[0], ["2026-03-08T05:00:00.000Z", "2026-03-10T04:00:00.000Z"]);
+  assert.deepEqual(spring.windows[0], ["2026-03-02T05:00:00.000Z", "2026-03-16T04:00:00.000Z"]);
 });
 
 test("configured room calendars support separate sources and deduplicate events", () => {
@@ -184,3 +185,16 @@ test("name extraction does not publish surnames, emails, phone numbers, or appoi
   assert.equal(first("Studio Rental", "Name: 202-555-0123"), "");
 });
 
+
+
+test('additional weekly history and lookahead expose times and rooms without customer names', () => {
+  const h=harness({events:[
+    rental({id:'earlier',start:'2026-10-13T16:00:00Z',end:'2026-10-13T17:00:00Z'}),
+    rental(),
+    rental({id:'later',start:'2026-10-23T16:00:00Z',end:'2026-10-23T17:00:00Z'})
+  ]});
+  const feed=h.read();
+  assert.deepEqual(feed.events.map(e=>e.firstName),['','Taylor','']);
+  assert.equal(feed.rangeStartISO,'2026-10-12T04:00:00.000Z');
+  assert.equal(feed.rangeEndISO,'2026-10-26T04:00:00.000Z');
+});

@@ -5,7 +5,7 @@
 // Public output contains first names and times, never descriptions/contact/pay.
 
 const TV_TIME_ZONE = "America/New_York";
-const TV_CACHE_KEY = "smooth-welcome-tv-v2";
+const TV_CACHE_KEY = "smooth-welcome-tv-v3-weekly";
 
 function doGet(e) {
   const callback = e && e.parameter ? e.parameter.callback : null;
@@ -139,8 +139,15 @@ function tvMidnight(localDate) {
 
 function tvBuildFeed(now) {
   const date = Utilities.formatDate(now, TV_TIME_ZONE, "yyyy-MM-dd");
-  const afterTomorrow = new Date(Date.parse(date + "T00:00:00Z") + 2 * 86400000).toISOString().slice(0, 10);
-  const from = tvMidnight(date), until = tvMidnight(afterTomorrow);
+  // Retain this week's completed rentals and look through next week so the TV
+  // can stay on its calendar across empty days and Sunday/Monday transitions.
+  const civilDay = new Date(date + "T00:00:00Z");
+  const monday = new Date(civilDay.getTime() - ((civilDay.getUTCDay() + 6) % 7) * 86400000);
+  const afterNextWeek = new Date(monday.getTime() + 14 * 86400000).toISOString().slice(0, 10);
+  const from = tvMidnight(monday.toISOString().slice(0, 10)), until = tvMidnight(afterNextWeek);
+  // Keep first names within the pre-existing live feed's today/tomorrow window.
+  // The additional weekly history/lookahead publishes room and time only.
+  const nameUntil = tvMidnight(new Date(civilDay.getTime() + 2 * 86400000).toISOString().slice(0, 10));
   const unique = {};
   tvCalendars().forEach(function (source) {
     source.calendar.getEvents(from, until).forEach(function (event) {
@@ -150,9 +157,9 @@ function tvBuildFeed(now) {
           !/\bstudio(?:[\s:–—-]+[ab])?[\s:–—-]+rental\b|\brental[\s:–—-]+[ab]\b/i.test(title)) return;
       const start = event.getStartTime(), end = event.getEndTime();
       if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) ||
-          end <= now || end <= start || start >= until) return;
+          end <= from || end <= start || start >= until) return;
       const description = tvPlainText(event.getDescription());
-      const session = { firstName: tvFirstName(title, description),
+      const session = { firstName: end > now && start < nameUntil ? tvFirstName(title, description) : '',
         studio: tvStudio(title, description, source.studio),
         startISO: start.toISOString(), endISO: end.toISOString() };
       // Calendar identifiers remain server-side and are never returned.
@@ -169,8 +176,10 @@ function tvBuildFeed(now) {
   const next = events.find(function (event) { return Date.parse(event.startISO) >= pivot; }) || null;
   const legacyTitle = function (event) { return event ? (event.firstName ? event.firstName + ": " : "") + "Studio Rental" : null; };
   return { schemaVersion: 2, ok: true, generatedAt: now.toISOString(), timeZone: TV_TIME_ZONE, events: events,
+    rangeStartISO: from.toISOString(), rangeEndISO: until.toISOString(),
     // Keep the existing single-session display working during the update.
     isLive: Boolean(current), title: legacyTitle(current),
     startISO: current ? current.startISO : null, endISO: current ? current.endISO : null,
     nextTitle: legacyTitle(next), nextStartISO: next ? next.startISO : null };
 }
+
